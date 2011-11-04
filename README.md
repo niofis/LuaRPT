@@ -3,7 +3,7 @@ LuaRPT
 
 This is a ray and path tracing program build on lua. It doesn't try to be the fastest
 implementation around (altough it uses a BVH structure), but a somewhat easy to read,
-maitain and extend.
+maintain and extend.
 
 Licence
 -------
