@@ -57,9 +57,9 @@ function save(filename,data)
 	local s=""
 	local str=""
 
-	for y=0,data.height-1 do
+	for y=data.x,data.x+data.height-1 do
 		str=""
-		for x=0, data.width-1 do
+		for x=data.y,data.y+data.width-1 do
 			c=data[y][x];
 			s=string.format("%02X%02X%02X",
 			math.min(c.r*255,255),

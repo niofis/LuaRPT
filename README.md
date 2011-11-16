@@ -30,6 +30,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
+Version
+-------
+1.0.1
+- Added parameter for hex output filename. (-hex filename.hex)
+- Added parameter for png image filename. (-png image.png)
+- Added parameter to define render resolution. (-res width height)
+- Added parameter to define a section to render. (-s section_x section_y section_width section_height)
+- Added parameter to activate path tracing with number of samples. (-path samples)
+- Modified image.lua to support partial render output.
+
 Other Stuff
 -----------
 

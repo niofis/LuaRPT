@@ -18,7 +18,10 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+Version 1.0.1
 ]]
+
 
 local math=require("math")
 local rt=require("raytracer")
@@ -28,21 +31,45 @@ require("demo")
 
 res_width=320
 res_height=240
-use_sdl=1
-use_png=1
-print_prog=1
-use_path_tracing=1
+use_sdl=0
+use_png=0
+use_hex=0
+print_prog=0
+use_path_tracing=0
 path_tracing_samples=10
-
+section_x=0
+section_y=0
+section_w=res_width
+section_h=res_height
+img_file="image.png"
+hex_file="image.hex"
 --Process commandline args
 
-for _,v in pairs(arg) do
+for i,v in pairs(arg) do
 	if(v=="-sdl") then use_sdl=1 end
-	if(v=="-nsdl") then use_sdl=0 end
 	if(v=="-v") then print_prog=1 end
-	if(v=="-nv") then print_prog=0 end
-	if(v=="-i") then use_png=1 end
-	if(v=="-ni") then use_png=0 end
+	if(v=="-res") then
+		res_width=arg[i+1]
+		res_height=arg[i+2]
+	end
+	if(v=="-s") then
+		section_x=arg[i+1]
+		section_y=arg[i+2]
+		section_w=arg[i+3]
+		section_h=arg[i+4]
+	end
+	if(v=="-png") then
+		use_png=1
+		img_file=arg[i+1]
+	end
+	if(v=="-hex") then
+		use_hex=1
+		hex_file=arg[i+1]
+	end
+	if(v=="-path" then
+		use_path_tracing=1
+		path_tracing_samples=arg[i+1]
+	end
 end
 
 if(use_sdl==1) then
@@ -53,7 +80,7 @@ end
 
 if(use_png==1) then
 	png=require("png")
-	png.createnew(res_width,res_height)
+	png.createnew(section_w,section_h)
 end
 
 print("Resolution: " .. res_width .."x"..res_height)
@@ -79,7 +106,7 @@ function copyimage(section,render,isfloat)
 					sdl.setpixel(x,y,rgb.r,rgb.g,rgb.b)
 				end
 				if(use_png==1) then
-					png.setpixel(x,y,rgb.r,rgb.g,rgb.b)
+					png.setpixel(x-section_x,y-section_y,rgb.r,rgb.g,rgb.b)
 				end
 			end
 		end
@@ -88,14 +115,14 @@ end
 
 function renderwithupdate()
 	local delta=10
-	local dy=res_height/delta
-	local dx=res_width/delta
+	local dy=section_h/delta
+	local dx=section_w/delta
 	local tm;
 	local i=0
 	local section={}
 
-	for sy=0,res_height-1,delta do
-		for sx=0,res_width-1,delta do
+	for sy=section_y,section_y+section_h-1,delta do
+		for sx=section_x,section_x+section_w-1,delta do
 			tm=os.clock()
 			section={x=sx,y=sy,width=delta,height=delta}
 			rtracer:render(section,use_path_tracing,path_tracing_samples)
@@ -116,16 +143,24 @@ renderwithupdate()
 st= os.clock() - st
 print(st .. "s Total")
 
-render.width=res_width
-render.height=res_height
+render.x=section_x
+render.y=section_y
+render.width=section_w
+render.height=section_h
 
 --print("saving...")
 --image.save("finalimagedata.txt",render)
 --print("done saving!")
 
+if(use_hex==1) then
+	io.stdout:write("saving hex...")
+	image.save(hex_file,render)
+	print("done!")
+end
+
 if(use_png==1) then
-	print("saving png...")
-	png.save("image.png")
+	io.stdout:write("saving png...")
+	png.save(img_file)
 	png.release()
 	print("done!")
 end
