@@ -77,11 +77,11 @@ function Raytracer:new(o)
 end
 
 
-function Raytracer:render(section,use_pathtracing,samples)
+function Raytracer:render(section,use_pathtracing,path_samples)
 	local camera=self.scene.camera
 	local hdv=(camera.rt-camera.lt)/self.resolution.width	--horizontal delta vector
 	local vdv=(camera.lb-camera.lt)/self.resolution.height  --vertical delta vector
-
+	local samples=path_samples or 10
 	if self.bvh_init==0 then
 		base.print("Building BVH...")
 		local st=os.clock()
@@ -91,6 +91,7 @@ function Raytracer:render(section,use_pathtracing,samples)
 	end
 	self.use_pathtracing=use_pathtracing
 	self.results={}
+	
 	for y=section.y,section.y+section.height-1 do
 		self.image[y]=self.image[y] or {}
 		for x=section.x,section.x+section.width-1 do
@@ -99,21 +100,21 @@ function Raytracer:render(section,use_pathtracing,samples)
 			ray:normalize()
 
 			if(use_pathtracing==0) then
-				--Not path tracing
+				--No path tracing
 				local r=self:traceray(ray,1,use_pathtracing)
 				self.image[y][x]=r.color
 
-			else
+			elseif(use_pathtracing==1) then
 				--Path Tracing
-				samples=samples or 10
 				local colorpath=primitives.ColorF:new{}
 				for s=1,samples do
 					--The random helps with antialias
-					pt=(camera.lt + (hdv*(x + math.random())) + (vdv*(y+ math.random())))
+					pt=(camera.lt + (hdv*(x + (0.5-math.random()))) + (vdv*(y+ (0.5-math.random()))))
 					ray=Ray:new{origin=pt,direction=pt-camera.eye}
 					ray:normalize()
 					local r=self:traceray(ray,1,use_pathtracing)
 					colorpath=colorpath+r.color
+					
 				end
 				self.image[y][x]=colorpath/samples
 			end

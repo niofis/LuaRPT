@@ -32,6 +32,9 @@ DEALINGS IN THE SOFTWARE.
 
 Version
 -------
+1.0.2
+- Path tracing wasn't working when activated from command line arguments.
+
 1.0.1
 - Added parameter for hex output filename. (-hex filename.hex)
 - Added parameter for png image filename. (-png image.png)
