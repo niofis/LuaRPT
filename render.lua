@@ -27,7 +27,7 @@ local math=require("math")
 local rt=require("raytracer")
 local image=require("image")
 
-require("demo")
+local scene=require("demo")
 
 res_width=320
 res_height=240
@@ -70,7 +70,10 @@ for i,v in pairs(arg) do
 	end
 	if(v=="-path") then
 		use_path_tracing=1
-		path_tracing_samples=0 + arg[i+1] 
+		path_tracing_samples=0 + arg[i+1]
+	end
+	if(v=="-scene") then -- Usage -scene package_name
+		scene=require(arg[i+1])
 	end
 end
 
@@ -85,8 +88,11 @@ if(use_png==1) then
 	png.createnew(section_w,section_h)
 end
 
+scn=scene.load()
+
 print("Resolution: " .. res_width .."x"..res_height)
 print("Total objects: " .. table.maxn(scn.objects))
+
 
 render={}
 resolution={width=res_width,height=res_height}

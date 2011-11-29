@@ -25,6 +25,11 @@ local math=require("math")
 local rt=require("raytracer")
 local pm=require("primitives")
 
+local base = _G
+local io = require("io")
+
+module("demo")
+
 function spiral(count,start,scn)
 	local si=2*math.pi/count
 	local dx,dy,dz
@@ -37,7 +42,9 @@ function spiral(count,start,scn)
 	end
 end
 
-scn=pm.Scene:new{}
+function load()
+
+local scn=pm.Scene:new{}
 scn.camera.lt.x=-3.2
 scn.camera.lt.y=4.8
 scn.camera.lt.z=-5
@@ -69,3 +76,6 @@ scn.lights[1]=pm.Sphere:new{name="light",center=pm.Vector3:new{x=15,y=50,z=-10},
 
 
 --scn:loadfromms3d("smart.ms3d",{x=0,y=0,z=0})
+
+return scn
+end
