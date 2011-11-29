@@ -49,14 +49,16 @@ for i,v in pairs(arg) do
 	if(v=="-sdl") then use_sdl=1 end
 	if(v=="-v") then print_prog=1 end
 	if(v=="-res") then
-		res_width=arg[i+1]
-		res_height=arg[i+2]
+		res_width=0 + arg[i+1]
+		res_height=0 + arg[i+2]
+		section_w=res_width
+		section_h=res_height
 	end
 	if(v=="-s") then
-		section_x=arg[i+1]
-		section_y=arg[i+2]
-		section_w=arg[i+3]
-		section_h=arg[i+4]
+		section_x=0 + arg[i+1]
+		section_y=0 + arg[i+2]
+		section_w=0 + arg[i+3]
+		section_h=0 + arg[i+4]
 	end
 	if(v=="-png") then
 		use_png=1
@@ -66,9 +68,9 @@ for i,v in pairs(arg) do
 		use_hex=1
 		hex_file=arg[i+1]
 	end
-	if(v=="-path" then
+	if(v=="-path") then
 		use_path_tracing=1
-		path_tracing_samples=arg[i+1]
+		path_tracing_samples=0 + arg[i+1] 
 	end
 end
 
