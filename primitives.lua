@@ -626,3 +626,11 @@ function Triangle:getbox()
 	return res
 
 end
+
+function Triangle:getlightpoint()
+	return self.p1;
+end
+
+function Triangle:getrandomlightpoint()
+	return self.p1;
+end

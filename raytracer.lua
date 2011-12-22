@@ -91,7 +91,7 @@ function Raytracer:render(section,use_pathtracing,path_samples)
 	end
 	self.use_pathtracing=use_pathtracing
 	self.results={}
-	
+
 	for y=section.y,section.y+section.height-1 do
 		self.image[y]=self.image[y] or {}
 		for x=section.x,section.x+section.width-1 do
@@ -114,7 +114,7 @@ function Raytracer:render(section,use_pathtracing,path_samples)
 					ray:normalize()
 					local r=self:traceray(ray,1,use_pathtracing)
 					colorpath=colorpath+r.color
-					
+
 				end
 				self.image[y][x]=colorpath/samples
 			end
@@ -188,13 +188,14 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 	if(level>0 and obj~=nil) then
 		result.normal=obj:normal(result.point)
 
-		local li=self:lighting(result,ray)
-		result.lighting=li.lighting
-		result.specular=li.specular
+		local li=nil
 
 		if obj.islight==1 then
 			result.color=obj.color
 		else
+			li=self:lighting(result,ray)
+			result.lighting=li.lighting
+			result.specular=li.specular
 			result.color=(obj.color*result.lighting) + result.specular
 		end
 

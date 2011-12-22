@@ -31,7 +31,7 @@ local scene=require("demo")
 
 res_width=320
 res_height=240
-use_sdl=0
+use_sdl=1
 use_png=0
 use_hex=0
 print_prog=0
