@@ -39,7 +39,7 @@ function spiral(count,start,scn)
 		dy=dy+0.25
 		dx=math.sin(si*i)+2.5
 		dz=-math.cos(si*i)
-		scn.objects[i]=pm.Sphere:new{name="spiral"..i,center=pm.Vector3:new{x=dx,y=dy,z=dz},radius=0.35,color=pm.ColorF:new{r=1,g=0.5}}
+		scn.objects[i]=pm.Sphere:new{name="spiral"..i,center=pm.Vector3:new{x=dx,y=dy,z=dz},radius=0.35,color=pm.ColorF:new{r=1,g=0.5}, specular=1}
 	end
 end
 
@@ -60,9 +60,9 @@ scn.camera.eye.y=2.4
 scn.camera.eye.z=-15
 
 
-scn.objects[3]=pm.Sphere:new{name="blue",center=pm.Vector3:new{x=0,y=1,z=0},radius=1,color=pm.ColorF:new{b=1}}
-scn.objects[4]=pm.Sphere:new{name="yellow",center=pm.Vector3:new{x=-2,y=1,z=1},radius=1,color=pm.ColorF:new{r=1,g=1},reflection=0.40}
-scn.objects[5]=pm.Sphere:new{name="red-glass",center=pm.Vector3:new{x=-0.5,y=0.5,z=-3},radius=0.5,color=pm.ColorF:new{a=0.5,r=1,g=0,b=0},refraction=1.491}
+scn.objects[3]=pm.Sphere:new{name="blue",center=pm.Vector3:new{x=0,y=1,z=0},radius=1,color=pm.ColorF:new{b=1}, specular=1}
+scn.objects[4]=pm.Sphere:new{name="yellow",center=pm.Vector3:new{x=-2,y=1,z=1},radius=1,color=pm.ColorF:new{r=1,g=1},reflection=0.40, specular=1}
+scn.objects[5]=pm.Sphere:new{name="red-glass",center=pm.Vector3:new{x=-0.5,y=0.5,z=-3},radius=0.5,color=pm.ColorF:new{a=0.5,r=1,g=0,b=0},refraction=1.491, specular=1}
 
 scn.objects[1]=pm.Triangle:new{name="floor",p1=pm.Vector3:new{x=-200,y=0,z=200},p2=pm.Vector3:new{x=200,y=0,z=200},p3=pm.Vector3:new{x=0,y=0,z=-20},color=pm.ColorF:new{g=0.5,r=0.5,b=0.5}}
 --scn.objects[2]=pm.Triangle:new{name="back",p1=pm.Vector3:new{x=-200,y=-200,z=50},p3=pm.Vector3:new{x=200,y=-200,z=50},p2=pm.Vector3:new{x=0,y=2000,z=50},color=pm.ColorF:new{b=1, r=0.7372, g=0.9098}}

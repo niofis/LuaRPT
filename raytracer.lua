@@ -145,17 +145,22 @@ function Raytracer:lighting(res,ray)
 			light=light+math.max(dp,0)
 --					base.print(math.max(dp,0),light.r,light.g,light.b)
 			--specular lighting
-			local vr=nray.direction - (on*(int*2))
-			int=vr*ray.direction
-			if(int>0) then
-				int=int^20
-				spec=spec+(l.color*int)
+			if res.obj.specular>0 then
+				local vr=nray.direction - (on*(int*2))
+				int=vr*ray.direction
+				if(int>0) then
+					int=int^20
+					spec=spec+(l.color*int)*res.obj.specular
+				end
 			end
 		end
 	end
 	--end
 	--light=light/100
 	--spec=spec/100
+	light.r=math.min(light.r,1)
+	light.g=math.min(light.g,1)
+	light.b=math.min(light.b,1)
 	return {lighting=light,specular=spec}  --[1]Lighting, [2]Specular coloring
 end
 

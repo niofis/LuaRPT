@@ -1,11 +1,7 @@
-//Taken from MilkShape3D SDK
-//http://chumbalum.swissquake.ch/
-//slightly modified
-
 #ifndef _MS3DFILE_H_
 #define _MS3DFILE_H_
 
-#include <pshpack1.h>
+//#include <pshpack1.h>
 
 #ifndef byte
 typedef unsigned char byte;
@@ -95,7 +91,7 @@ typedef struct
     ms3d_keyframe_pos_t* keyFramesTrans;  // local animation matrices
 } ms3d_joint_t;
 
-#include <poppack.h>
+//#include <poppack.h>
 
 void LoadSceneFromFile(const char* file);
 int MS3DLoadFromFile(const char* lpszFileName);
@@ -108,5 +104,36 @@ int MS3DGetNumGroups();
 ms3d_group_t* MS3DGetGroupAt(int nIndex);
 int MS3DGetNumMaterials();
 ms3d_material_t* MS3DGetMaterialAt(int nIndex);
+
+//class CMS3DFileI;
+//class CMS3DFile
+//{
+//public:
+//	CMS3DFile();
+//	virtual ~CMS3DFile();
+//
+//public:
+//	
+//	
+//
+//	
+//	int GetNumEdges();
+//	void GetEdgeAt(int nIndex, ms3d_edge_t **ppEdge);
+//
+//	int GetNumJoints();
+//	void GetJointAt(int nIndex, ms3d_joint_t **ppJoint);
+//	int FindJointByName(const char* lpszName);
+//
+//	float GetAnimationFPS();
+//	float GetCurrentTime();
+//	int GetTotalFrames();
+//
+//private:
+//	CMS3DFileI *_i;
+//
+//private:
+//	CMS3DFile(const CMS3DFile& rhs);
+//	CMS3DFile& operator=(const CMS3DFile& rhs);
+//};
 
 #endif // _MS3DFILE_H_

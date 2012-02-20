@@ -1,32 +1,8 @@
-/*
-Copyright (c) 2011 Enrique CR
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-*/
-
 #define LUA_LIB
 #ifdef WIN32
 	#define LUA_BUILD_AS_DLL
 #endif
 #include <SDL/SDL.h>
-#include <zlib.h>
-#include <png.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <math.h>
@@ -57,74 +33,6 @@ static int wait=0;
 #endif
 
 #define abort_(str) {printf(str);return 1;}
-
-static int sdl_savepng(lua_State *L)
-{
-		char* file_name=(char *)lua_tostring(L,1);
-		int r=0;
-		png_structp png_ptr;
-		png_infop info_ptr;
-		static png_FILE_p fp;
-        /* create file */
-        fp = fopen(file_name, "wb");
-        if (!fp)
-                abort_("[write_png_file] File  could not be opened for writing");
-
-
-        /* initialize stuff */
-        png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-        if (!png_ptr)
-                abort_("[write_png_file] png_create_write_struct failed");
-
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-                abort_("[write_png_file] png_create_info_struct failed");
-
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during init_io");
-
-        png_init_io(png_ptr, fp);
-
-
-        /* write header */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing header");
-
-        png_set_IHDR(png_ptr, info_ptr, width, height,
-                     8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-        png_write_info(png_ptr, info_ptr);
-
-		png_set_bgr(png_ptr);
-
-        /* write bytes */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing bytes");
-
-        //png_write_image(png_ptr, row_pointers);
-		for(r=0;r<height;r++)
-		png_write_row(png_ptr,(char*)(&image[r*width*Bpp]));
-
-
-        /* end write */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during end of write");
-
-        png_write_end(png_ptr, NULL);
-
-        /* cleanup heap allocation */
-		/*
-        for (y=0; y<height; y++)
-                free(row_pointers[y]);
-        free(row_pointers);
-		*/
-
-        fclose(fp);
-		return 0;
-}
-
 
 static int sdl_setpixel(lua_State *L)
 {
@@ -193,7 +101,7 @@ static int sdl_setresolution(lua_State *L)
 THREAD mainloop(void* p)
 {
 	SDL_Event event;
-
+	
 	while(!done)
 	{
 		if(SDL_PollEvent(&event))
@@ -228,7 +136,7 @@ THREAD mainloop(void* p)
 					break;
 			}
 		}
-
+		
 		if(!wait)
 		{
 			SDL_LockSurface(screen);
@@ -236,10 +144,10 @@ THREAD mainloop(void* p)
 			SDL_UnlockSurface(screen);
 			SDL_Flip(screen);
 		}
-
+		
 		Sleep(10);
 	}
-
+	
 	free(image);
 	SDL_FreeSurface(screen);
 	SDL_Quit();
@@ -289,7 +197,7 @@ static int sdl_waitclose(lua_State *L)
 }
 
 
-static const luaL_reg LuaSDLlib[] = {
+static const luaL_reg sdllib[] = {
 {"setpixel",   sdl_setpixel},
 {"getwidth",   sdl_getwidth},
 {"getheight",   sdl_getheight},
@@ -297,13 +205,12 @@ static const luaL_reg LuaSDLlib[] = {
 {"showsurface",sdl_showsurface},
 {"exit",sdl_exit},
 {"waitclose",sdl_waitclose},
-{"savepng",   sdl_savepng},
 {NULL, NULL}
 };
 
-LUALIB_API int luaopen_LuaSDL (lua_State *L)
+LUALIB_API int luaopen_luasdl (lua_State *L)
 {
-
+  
 	done = 0;
 	screen=0;
 	width=640;
@@ -314,8 +221,8 @@ LUALIB_API int luaopen_LuaSDL (lua_State *L)
 	image=0;
 	videoflags=SDL_HWACCEL | SDL_HWSURFACE | SDL_ASYNCBLIT;
 	wait=0;
-
-	luaL_register(L, "LuaSDL", LuaSDLlib);
+	
+	luaL_register(L, "luasdl", sdllib);
   return 1;
 }
 

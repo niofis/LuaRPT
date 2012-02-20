@@ -1,11 +1,10 @@
-//Taken from MilkShape3D SDK
-//http://chumbalum.swissquake.ch/
-//slightly modified
-
 #pragma warning(disable : 4786)
 #include "MS3DFile.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+//#include <set>
+//#include <vector>
 
 #define MAKEDWORD(a, b)      ((unsigned int)(((word)(a)) | ((word)((word)(b))) << 16))
 
@@ -23,6 +22,15 @@ word ms3d_numMaterials;
 //int iTotalFrames;
 //ms3d_joint_t* arrJoints;
 
+//CMS3DFile::CMS3DFile()
+//{
+//	_i = new CMS3DFileI();
+//}
+
+//CMS3DFile::~CMS3DFile()
+//{
+//	delete _i;
+//}
 
 void LoadSceneFromFile(const char* file)
 {

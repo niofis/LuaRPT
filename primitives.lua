@@ -165,7 +165,7 @@ function Scene:new(o)
 	return o
 end
 
-function Scene:loadfromms3d(filename, offset, scale)
+function Scene:loadfromms3d(filename, offset, scale,specular)
 	ms3d.loadfile(filename)
 	local num_triangles=ms3d.getnumtriangles()
 	for i=1,num_triangles do
@@ -173,7 +173,7 @@ function Scene:loadfromms3d(filename, offset, scale)
 		local obj=Triangle:new{name="",p1=Vector3:new{x=tr.v1.x,y=tr.v1.y,z=tr.v1.z},
 											p3=Vector3:new{x=tr.v2.x,y=tr.v2.y,z=tr.v2.z},
 											p2=Vector3:new{x=tr.v3.x,y=tr.v3.y,z=tr.v3.z},
-											color=ColorF:new{a=tr.color.a,r=tr.color.r,g=tr.color.g,b=tr.color.b}}
+											color=ColorF:new{a=tr.color.a,r=tr.color.r,g=tr.color.g,b=tr.color.b},specular=specular}
 
 		if tr.color.a<1.0 then
 			obj.refraction=1
