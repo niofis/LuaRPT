@@ -39,8 +39,8 @@ use_path_tracing=0
 path_tracing_samples=10
 section_x=0
 section_y=0
-section_w=res_width
-section_h=res_height
+section_w=0
+section_h=0
 img_file="image.png"
 hex_file="image.hex"
 --Process commandline args
@@ -51,8 +51,6 @@ for i,v in pairs(arg) do
 	if(v=="-res") then
 		res_width=0 + arg[i+1]
 		res_height=0 + arg[i+2]
-		section_w=res_width
-		section_h=res_height
 	end
 	if(v=="-s") then
 		section_x=0 + arg[i+1]
@@ -76,6 +74,9 @@ for i,v in pairs(arg) do
 		scene=require(arg[i+1])
 	end
 end
+
+if section_w==0 then section_w=res_width end
+if section_h==0 then section_h=res_height end
 
 if(use_sdl==1) then
 	sdl=require("luasdl")

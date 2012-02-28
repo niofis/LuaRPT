@@ -57,9 +57,9 @@ function save(filename,data)
 	local s=""
 	local str=""
 
-	for y=data.x,data.x+data.height-1 do
+	for y=data.y,data.y+data.height-1 do
 		str=""
-		for x=data.y,data.y+data.width-1 do
+		for x=data.x,data.x+data.width-1 do
 			c=data[y][x];
 			s=string.format("%02X%02X%02X",
 			math.min(c.r*255,255),
@@ -109,31 +109,6 @@ function savebinary(filename,data)
 	file:close()
 end
 
-function load(filename)
-	local data={}
-	local file=io.open(filename)
-	local y=0
-	local x=0
-	local nums
-	if file==nil then return nil end
-	for line in file:lines() do
-		x=0
-		data[y]=data[y] or {}
-		for d in line:gmatch("(%x%x%x%x%x%x)") do
-			data[y][x]=data[y][x] or {}
-			data[y][x].r=image.hextonum(d:match("%x%x",1))
-			data[y][x].g=image.hextonum(d:match("%x%x",3))
-			data[y][x].b=image.hextonum(d:match("%x%x",5))
-			x=x+1
-		end
-		y=y+1
-	end
-
-	data.width=x
-	data.height=y
-
-	return data
-end
 
 local function hextonum(value)
 	local pos=1
@@ -151,3 +126,28 @@ local function hextonum(value)
 	return number
 end
 
+function load(filename)
+	local data={}
+	local file=io.open(filename)
+	local y=0
+	local x=0
+	local nums
+	if file==nil then return nil end
+	for line in file:lines() do
+		x=0
+		data[y]=data[y] or {}
+		for d in line:gmatch("(%x%x%x%x%x%x)") do
+			data[y][x]=data[y][x] or {}
+			data[y][x].r=hextonum(d:match("%x%x",1))
+			data[y][x].g=hextonum(d:match("%x%x",3))
+			data[y][x].b=hextonum(d:match("%x%x",5))
+			x=x+1
+		end
+		y=y+1
+	end
+
+	data.width=x
+	data.height=y
+
+	return data
+end

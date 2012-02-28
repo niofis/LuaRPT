@@ -104,7 +104,7 @@ function Raytracer:render(section,use_pathtracing,path_samples)
 				local r=self:traceray(ray,1,use_pathtracing)
 				self.image[y][x]=r.color
 
-			elseif(use_pathtracing==1) then
+			elseif use_pathtracing==1 then
 				--Path Tracing
 				local colorpath=primitives.ColorF:new{}
 				for s=1,samples do
@@ -258,7 +258,7 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 			end
 		end
 		]]
-		if use_pathtracing==1  and level<10 then
+		if use_pathtracing==1  and level<2 then
 			local rand_ray=Ray:new{}
 			local dotp=0
 			--Get only rays directed to the upper half hemisphere of the collision point, the normal indicates the north
