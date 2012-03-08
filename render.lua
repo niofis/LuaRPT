@@ -137,7 +137,7 @@ function renderwithupdate()
 			rtracer:render(section,use_path_tracing,path_tracing_samples)
 			i=i+1
 			if(print_prog==1) then
-				print("Section " ..i.."/" .. (dx*dy) .. " ("..sx..","..sy..") "..delta.."w, "..delta.."h done in "..os.clock() - tm.."s")
+				io.stdout:write("\rSection " ..i.."/" .. (dx*dy) .. " ("..sx..","..sy..") "..delta.."w, "..delta.."h done in "..os.clock() - tm.."s                ")
 			end
 			if(use_sdl==1) or (use_png==1) then
 				copyimage(section,render,1)
@@ -150,7 +150,7 @@ end
 st=os.clock()
 renderwithupdate()
 st= os.clock() - st
-print(st .. "s Total")
+print("\n" .. st .. "s Total")
 
 render.x=section_x
 render.y=section_y
