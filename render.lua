@@ -129,6 +129,7 @@ function renderwithupdate()
 	local tm;
 	local i=0
 	local section={}
+	local outs=""
 
 	for sy=section_y,section_y+section_h-1,delta do
 		for sx=section_x,section_x+section_w-1,delta do
@@ -137,7 +138,8 @@ function renderwithupdate()
 			rtracer:render(section,use_path_tracing,path_tracing_samples)
 			i=i+1
 			if(print_prog==1) then
-				io.stdout:write("\rSection " ..i.."/" .. (dx*dy) .. " ("..sx..","..sy..") "..delta.."w, "..delta.."h done in "..os.clock() - tm.."s                ")
+				outs="\rSection " ..i.."/" .. (dx*dy) .. " ("..sx..","..sy..") "..delta.."w, "..delta.."h done in "..os.clock() - tm.."s"
+				io.stdout:write(outs .. string.rep(" ", 80-#outs))
 			end
 			if(use_sdl==1) or (use_png==1) then
 				copyimage(section,render,1)
