@@ -44,19 +44,15 @@ function Vector3:new(o)
 end
 
 function Vector3:serialize()
-	return string.format("v3(%.17f,%.17f,%.17f)",self.x,self.y,self.z)
+	return string.format("(v3 %.17f %.17f %.17f)",self.x,self.y,self.z)
 end
 
 function Vector3.parse(str)
 	local v=Vector3:new{}
-	local a,x,y,z=str:match("v3\(([+-]?\d+\.\d+),([+-]?\d+\.\d+),([+-]?\d+\.\d+)\)")
-	base.print(a)
-	base.print(x)
-	base.print(y)
-	base.print(z)
-	v.x=x;
-	v.y=y;
-	v.z=z;
+	local x,y,z=str:match("%(v3 ([^ ]+) ([^ ]+) ([^ ]+)%)")
+	v.x=base.tonumber(x);
+	v.y=base.tonumber(y);
+	v.z=base.tonumber(z);
 	return v
 end
 
@@ -169,6 +165,22 @@ function Camera:new(o)
 	return o
 end
 
+function Camera:serialize()
+	return string.format("(cam %s %s %s %s)",self.lt:serialize(),
+		self.lb:serialize(),self.rt:serialize(),self.eye:serialize())
+end
+
+function Camera.parse(str)
+	local v=Camera:new{}
+	local lt,lb,rt,eye=str:match("%(cam (%(.*%)) (%(.*%)) (%(.*%)) (%(.*%))%)")
+	base.print("lt",lt,"lb",lb,"rt",rt,"eye",eye)
+	v.lt=Vector3.parse(lt)
+	v.lb=Vector3.parse(lb)
+	v.rt=Vector3.parse(rt)
+	v.eye=Vector3.parse(eye)
+	return v
+end
+
 Scene={}
 function Scene:new(o)
 	o=o or {}
@@ -232,6 +244,20 @@ function ColorF:new(o)
 	o.b=o.b or 0
 
 	return o
+end
+
+function ColorF:serialize()
+	return string.format("(cf %.17f %.17f %.17f %.17f)",self.a,self.r,self.g,self.b)
+end
+
+function ColorF.parse(str)
+	local v=ColorF:new{}
+	local a,r,g,b=str:match("%(cf ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)%)")
+	v.a=base.tonumber(a);
+	v.r=base.tonumber(r);
+	v.g=base.tonumber(g);
+	v.b=base.tonumber(b);
+	return v
 end
 
 ColorF.__add = function(a,b)
