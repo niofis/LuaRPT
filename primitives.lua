@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 local math = require('math')
 local string = require("string")
 local table = require("table")
-local ms3d = require("ms3d")
+local ms3d = {} --require("ms3d")
 local tostring = tostring
 
 local base = _G
@@ -40,8 +40,24 @@ function Vector3:new(o)
 	o.x=o.x or 0
 	o.y=o.y or 0
 	o.z=o.z or 0
-	o.a=0
 	return o
+end
+
+function Vector3:serialize()
+	return string.format("v3(%.17f,%.17f,%.17f)",self.x,self.y,self.z)
+end
+
+function Vector3.parse(str)
+	local v=Vector3:new{}
+	local a,x,y,z=str:match("v3\(([+-]?\d+\.\d+),([+-]?\d+\.\d+),([+-]?\d+\.\d+)\)")
+	base.print(a)
+	base.print(x)
+	base.print(y)
+	base.print(z)
+	v.x=x;
+	v.y=y;
+	v.z=z;
+	return v
 end
 
 Vector3.__add = function(a,b)

@@ -21,6 +21,8 @@ DEALINGS IN THE SOFTWARE.
 ]]
 
 
+
+
 local math=require("math")
 local rt=require("raytracer")
 local pm=require("primitives")
@@ -44,43 +46,42 @@ function spiral(count,start,scn)
 end
 
 function load()
+	local scn=pm.Scene:new{}
+	scn.camera.lt.x=-3.2
+	scn.camera.lt.y=4.8
+	scn.camera.lt.z=-5
+	scn.camera.lb.x=-3.2
+	scn.camera.lb.y=0
+	scn.camera.lb.z=-5
+	scn.camera.rt.x=3.2
+	scn.camera.rt.y=4.8
+	scn.camera.rt.z=-5
+	scn.camera.eye.x=0
+	scn.camera.eye.y=2.4
+	scn.camera.eye.z=-15
 
-local scn=pm.Scene:new{}
-scn.camera.lt.x=-3.2
-scn.camera.lt.y=4.8
-scn.camera.lt.z=-5
-scn.camera.lb.x=-3.2
-scn.camera.lb.y=0
-scn.camera.lb.z=-5
-scn.camera.rt.x=3.2
-scn.camera.rt.y=4.8
-scn.camera.rt.z=-5
-scn.camera.eye.x=0
-scn.camera.eye.y=2.4
-scn.camera.eye.z=-15
 
+	scn.objects[1]=pm.Sphere:new{name="blue",center=pm.Vector3:new{x=0,y=1,z=0},radius=1,color=pm.ColorF:new{b=1}, specular=1}
+	scn.objects[2]=pm.Sphere:new{name="yellow",center=pm.Vector3:new{x=-2,y=1,z=1},radius=1,color=pm.ColorF:new{r=1,g=1},reflection=0.40, specular=1}
+	scn.lights[1]=pm.Sphere:new{name="light",center=pm.Vector3:new{x=3,y=3,z=-1},radius=0.2,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1000};
+	table.insert(scn.objects,scn.lights[1])
+	return scn
+	--scn.objects[5]=pm.Sphere:new{name="red-glass",center=pm.Vector3:new{x=-0.5,y=0.5,z=-3},radius=0.5,color=pm.ColorF:new{a=0.5,r=1,g=0,b=0},refraction=1.491, specular=1}
 
-scn.objects[3]=pm.Sphere:new{name="blue",center=pm.Vector3:new{x=0,y=1,z=0},radius=1,color=pm.ColorF:new{b=1}, specular=1}
-scn.objects[4]=pm.Sphere:new{name="yellow",center=pm.Vector3:new{x=-2,y=1,z=1},radius=1,color=pm.ColorF:new{r=1,g=1},reflection=0.40, specular=1}
-scn.objects[5]=pm.Sphere:new{name="red-glass",center=pm.Vector3:new{x=-0.5,y=0.5,z=-3},radius=0.5,color=pm.ColorF:new{a=0.5,r=1,g=0,b=0},refraction=1.491, specular=1}
+	--scn.objects[1]=pm.Triangle:new{name="floor",p1=pm.Vector3:new{x=-200,y=0,z=200},p2=pm.Vector3:new{x=200,y=0,z=200},p3=pm.Vector3:new{x=0,y=0,z=-20},color=pm.ColorF:new{g=0.5,r=0.5,b=0.5}}
+	--scn.objects[2]=pm.Triangle:new{name="back",p1=pm.Vector3:new{x=-200,y=-200,z=50},p3=pm.Vector3:new{x=200,y=-200,z=50},p2=pm.Vector3:new{x=0,y=2000,z=50},color=pm.ColorF:new{b=1, r=0.7372, g=0.9098}}
 
-scn.objects[1]=pm.Triangle:new{name="floor",p1=pm.Vector3:new{x=-200,y=0,z=200},p2=pm.Vector3:new{x=200,y=0,z=200},p3=pm.Vector3:new{x=0,y=0,z=-20},color=pm.ColorF:new{g=0.5,r=0.5,b=0.5}}
---scn.objects[2]=pm.Triangle:new{name="back",p1=pm.Vector3:new{x=-200,y=-200,z=50},p3=pm.Vector3:new{x=200,y=-200,z=50},p2=pm.Vector3:new{x=0,y=2000,z=50},color=pm.ColorF:new{b=1, r=0.7372, g=0.9098}}
+	--spiral(10,6,scn)
 
---spiral(10,6,scn)
+	--scn.lights[1]=Light:new{color=ColorF:new{r=1,g=1,b=1},position=Vector3:new{x=5,y=5,z=-5},intensity=40}
+	--scn.lights[2]=Light:new{color=ColorF:new{r=1,g=1,b=1},position=Vector3:new{x=-5,y=5,z=5},intensity=40}
+	--scn.lights[1]=Sphere:new{name="light",center=Vector3:new{x=5,y=5,z=-5},radius=1,color=ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=100}
+	--scn.lights[1]=pm.Sphere:new{name="light",center=pm.Vector3:new{x=15,y=50,z=-10},radius=5,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1000};
+	--scn.lights[2]=pm.Sphere:new{name="light2",center=pm.Vector3:new{x=0,y=3,z=-1},radius=0.33,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1}
 
---scn.lights[1]=Light:new{color=ColorF:new{r=1,g=1,b=1},position=Vector3:new{x=5,y=5,z=-5},intensity=40}
---scn.lights[2]=Light:new{color=ColorF:new{r=1,g=1,b=1},position=Vector3:new{x=-5,y=5,z=5},intensity=40}
---scn.lights[1]=Sphere:new{name="light",center=Vector3:new{x=5,y=5,z=-5},radius=1,color=ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=100}
---scn.lights[1]=pm.Sphere:new{name="light",center=pm.Vector3:new{x=15,y=50,z=-10},radius=5,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1000};
---scn.lights[2]=pm.Sphere:new{name="light2",center=pm.Vector3:new{x=0,y=3,z=-1},radius=0.33,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1}
+	--scn.lights[2]=pm.Triangle:new{name="light2",p1=pm.Vector3:new{x=-4,y=2,z=0},p3=pm.Vector3:new{x=-4,y=3,z=0},p2=pm.Vector3:new{x=-3,y=2,z=0},color=pm.ColorF:new{b=1, r=1, g=1},islight=1,intensity=1000}
+	--scn:loadfromms3d("smart.ms3d",{x=0,y=0,z=0})
 
-scn.lights[1]=pm.Sphere:new{name="light",center=pm.Vector3:new{x=3,y=3,z=-1},radius=0.2,color=pm.ColorF:new{r=1,g=1,b=1,a=1},islight=1,intensity=1000};
-scn.lights[2]=pm.Triangle:new{name="light2",p1=pm.Vector3:new{x=-4,y=2,z=0},p3=pm.Vector3:new{x=-4,y=3,z=0},p2=pm.Vector3:new{x=-3,y=2,z=0},color=pm.ColorF:new{b=1, r=1, g=1},islight=1,intensity=1000}
---scn:loadfromms3d("smart.ms3d",{x=0,y=0,z=0})
+	--table.insert(scn.objects,scn.lights[2])
 
-table.insert(scn.objects,scn.lights[1])
-table.insert(scn.objects,scn.lights[2])
-
-return scn
 end
