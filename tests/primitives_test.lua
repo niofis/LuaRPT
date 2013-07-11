@@ -1,13 +1,14 @@
 package.path = package.path .. ';../?.lua'
 
 local pm=require("primitives")
+local dm=require("demo")
 
 
 
 function dump(obj,lvl)
 	local l=lvl or 0
 	for i,v in pairs(obj) do
-		print(string.rep("\t",l),i,v)
+		--print(string.rep("\t",l),i,v)
 		if type(v)=="table" then
 			dump(v,l+1)
 		end
@@ -61,8 +62,36 @@ function TestLight()
 	dump(l2)
 end
 
+function TestSphere()
+	local l1=pm.Sphere:new{name="blue",center=pm.Vector3:new{x=0,y=1,z=0},radius=1,color=pm.ColorF:new{b=1}, specular=1}
+	local srl=l1:serialize()
+	print(srl)
+	local l2=pm.Sphere.parse(srl)
+	dump(l2)
+end
 
+function TestTriangle()
+	local l1=pm.Triangle:new{name="back",p1=pm.Vector3:new{x=-200,y=-200,z=50},p3=pm.Vector3:new{x=200,y=-200,z=50},p2=pm.Vector3:new{x=0,y=2000,z=50},color=pm.ColorF:new{b=1, r=0.7372, g=0.9098}}
+	local srl=l1:serialize()
+	print(srl)
+	local l2=pm.Triangle.parse(srl)
+	dump(l2)
+end
+
+function TestScene()
+	local l1=dm.load()
+	local srl=l1:serialize()
+	print(srl)
+end
+
+
+
+--[[
 TestVector3()
 TestCamera()
 TestColorF()
 TestLight()
+TestSphere()
+TestTriangle()
+]]
+TestScene()

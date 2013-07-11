@@ -192,6 +192,29 @@ function Scene:new(o)
 	return o
 end
 
+
+function Scene:serialize()
+	local objs= self.objects[1]:serialize()
+	for i=2,#self.objects do
+		objs=objs .. "|" .. self.objects[i]:serialize()
+	end
+	local ligs= self.lights[1]:serialize()
+	for i=2,#self.lights do
+		ligs=ligs .. "|" .. self.lights[i]:serialize()
+	end
+	local cam=self.camera:serialize()
+
+	local srl=string.format("(sc [%s] [%s] %s)",objs,ligs,cam)
+
+	return srl
+end
+
+function Scene.parse(str)
+	local v=Scene:new{}
+	local objects,lights,camera=str:match("%(sc %[(.+)%] %[(.+)%] (%(.*%))%)")
+	return v
+end
+
 function Scene:loadfromms3d(filename, offset, scale,specular)
 	ms3d.loadfile(filename)
 	local num_triangles=ms3d.getnumtriangles()
@@ -498,9 +521,9 @@ function Sphere:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.radius=o.radius or 0
 	o.center=o.center or Vector3:new{}
 	o.color=o.color or ColorF:new{}
+	o.radius=o.radius or 0
 	o.name=o.name or "sphere"
 	o.reflection=o.reflection or 0
 	o.refraction=o.refraction or 0
@@ -512,20 +535,30 @@ function Sphere:new(o)
 	return o
 end
 
-function Light:serialize()
-	return string.format("(lg %s %s %.17f %)",self.center:serialize(),
-		self.color:serialize(),self.radius)
+function Sphere:serialize()
+	return string.format("(sp %s %s %.17f %.17f %.17f %.17f %.17f %i '%s')",self.center:serialize(),
+		self.color:serialize(),self.radius,self.reflection,
+		self.refraction,self.specular,self.intensity,self.islight,
+		self.name)
 end
 
-function Light.parse(str)
-	local v=Light:new{}
-	local position,color,intensity=str:match("%(lg (%(.*%)) (%(.*%)) ([^ ]+)%)")
-	v.position=Vector3.parse(position)
+function Sphere.parse(str)
+	local v=Sphere:new{}
+	local center,color,radius,
+		reflection,refraction,
+		specular,intensity,islight,
+		name=str:match("%(sp (%(.*%)) (%(.*%)) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) '(.-)'%)")
+	v.center=Vector3.parse(center)
 	v.color=ColorF.parse(color)
+	v.radius=base.tonumber(radius)
+	v.reflection=base.tonumber(reflection)
+	v.refraction=base.tonumber(refraction)
+	v.specular=base.tonumber(specular)
 	v.intensity=base.tonumber(intensity)
+	v.islight=base.tonumber(islight)
+	v.name=name
 	return v
 end
-
 
 function Sphere:normal(pt)
 	local res=pt-self.center
@@ -612,6 +645,34 @@ function Triangle:new(o)
 	--Initialize
 	o:init()
 	return o
+end
+
+function Triangle:serialize()
+	return string.format("(tr %s %s %s %s %.17f %.17f %.17f %.17f %i '%s')",
+		self.p1:serialize(),self.p2:serialize(),
+		self.p3:serialize(),self.color:serialize(),
+		self.reflection,
+		self.refraction,self.specular,self.intensity,self.islight,
+		self.name)
+end
+
+function Triangle.parse(str)
+	local v=Triangle:new{}
+	local p1,p2,p3,color,
+		reflection,refraction,
+		specular,intensity,islight,
+		name=str:match("%(tr (%(.*%)) (%(.*%)) (%(.*%)) (%(.*%)) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) '(.-)'%)")
+	v.p1=Vector3.parse(p1)
+	v.p2=Vector3.parse(p2)
+	v.p3=Vector3.parse(p3)
+	v.color=ColorF.parse(color)
+	v.reflection=base.tonumber(reflection)
+	v.refraction=base.tonumber(refraction)
+	v.specular=base.tonumber(specular)
+	v.intensity=base.tonumber(intensity)
+	v.islight=base.tonumber(islight)
+	v.name=name
+	return v
 end
 
 function Triangle:init()
