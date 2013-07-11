@@ -53,7 +53,16 @@ function TestColorF()
 	dump(v2)
 end
 
+function TestLight()
+	local l1=pm.Light:new{color=pm.ColorF:new{r=1,g=1,b=1},position=pm.Vector3:new{x=5,y=5,z=-5},intensity=40}
+	local srl=l1:serialize()
+	print(srl)
+	local l2=pm.Light.parse(srl)
+	dump(l2)
+end
+
 
 TestVector3()
 TestCamera()
 TestColorF()
+TestLight()

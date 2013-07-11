@@ -173,7 +173,6 @@ end
 function Camera.parse(str)
 	local v=Camera:new{}
 	local lt,lb,rt,eye=str:match("%(cam (%(.*%)) (%(.*%)) (%(.*%)) (%(.*%))%)")
-	base.print("lt",lt,"lb",lb,"rt",rt,"eye",eye)
 	v.lt=Vector3.parse(lt)
 	v.lb=Vector3.parse(lb)
 	v.rt=Vector3.parse(rt)
@@ -326,6 +325,15 @@ function ColorF:to255()
 	return res
 end
 
+function ColorF:normalize()
+	local m = math.max(self.r,self.g,self.b)
+	if(m>1) then
+		self.r=self.r/m
+		self.g=self.g/m
+		self.b=self.b/m
+	end
+end
+
 Box={}
 
 function Box:new(o)
@@ -455,15 +463,6 @@ function Box:intersect(ray)
 end
 
 
-function ColorF:normalize()
-	local m = math.max(self.r,self.g,self.b)
-	if(m>1) then
-		self.r=self.r/m
-		self.g=self.g/m
-		self.b=self.b/m
-	end
-end
-
 Light={}
 
 function Light:new(o)
@@ -477,6 +476,21 @@ function Light:new(o)
 
 	return o
 end
+
+function Light:serialize()
+	return string.format("(lg %s %s %.17f)",self.position:serialize(),
+		self.color:serialize(),self.intensity)
+end
+
+function Light.parse(str)
+	local v=Light:new{}
+	local position,color,intensity=str:match("%(lg (%(.*%)) (%(.*%)) ([^ ]+)%)")
+	v.position=Vector3.parse(position)
+	v.color=ColorF.parse(color)
+	v.intensity=base.tonumber(intensity)
+	return v
+end
+
 
 Sphere={}
 function Sphere:new(o)
@@ -497,6 +511,21 @@ function Sphere:new(o)
 
 	return o
 end
+
+function Light:serialize()
+	return string.format("(lg %s %s %.17f %)",self.center:serialize(),
+		self.color:serialize(),self.radius)
+end
+
+function Light.parse(str)
+	local v=Light:new{}
+	local position,color,intensity=str:match("%(lg (%(.*%)) (%(.*%)) ([^ ]+)%)")
+	v.position=Vector3.parse(position)
+	v.color=ColorF.parse(color)
+	v.intensity=base.tonumber(intensity)
+	return v
+end
+
 
 function Sphere:normal(pt)
 	local res=pt-self.center
