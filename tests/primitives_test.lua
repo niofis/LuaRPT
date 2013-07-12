@@ -2,13 +2,14 @@ package.path = package.path .. ';../?.lua'
 
 local pm=require("primitives")
 local dm=require("demo")
+local serpent = require("serpent")
 
 
 
 function dump(obj,lvl)
 	local l=lvl or 0
 	for i,v in pairs(obj) do
-		--print(string.rep("\t",l),i,v)
+		print(string.rep("\t",l),i,v)
 		if type(v)=="table" then
 			dump(v,l+1)
 		end
@@ -82,6 +83,14 @@ function TestScene()
 	local l1=dm.load()
 	local srl=l1:serialize()
 	print(srl)
+	local s2=pm.Scene.parse(srl)
+	dump(s2)
+	local srl2=serpent.dump(l1)
+	print(srl2)
+	local fun,err=loadstring(srl2)
+	print(fun,err)
+	local t=fun()
+	dump(t)
 end
 
 

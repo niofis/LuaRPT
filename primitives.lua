@@ -212,6 +212,30 @@ end
 function Scene.parse(str)
 	local v=Scene:new{}
 	local objects,lights,camera=str:match("%(sc %[(.+)%] %[(.+)%] (%(.*%))%)")
+
+	for i in string.gmatch(objects,"[^|]+") do
+		if i then
+			local o=Sphere.parse(i)
+			if o then 
+				table.insert(v.objects,o)
+			else
+				o=Triangle.parse(i)
+				if o then 
+					table.insert(v.objects,o)
+				end
+			end
+		end
+	end
+
+	for i in string.gmatch(lights,"[^|]+") do
+		if i then
+			local o=Light.parse(i)
+			if o then 
+				table.insert(v.lights,o)
+			end
+		end
+	end
+	v.camera=Camera.parse(camera)
 	return v
 end
 
@@ -508,9 +532,11 @@ end
 function Light.parse(str)
 	local v=Light:new{}
 	local position,color,intensity=str:match("%(lg (%(.*%)) (%(.*%)) ([^ ]+)%)")
-	v.position=Vector3.parse(position)
-	v.color=ColorF.parse(color)
-	v.intensity=base.tonumber(intensity)
+	if position and color and intensity then
+		v.position=Vector3.parse(position)
+		v.color=ColorF.parse(color)
+		v.intensity=base.tonumber(intensity)
+	end
 	return v
 end
 
