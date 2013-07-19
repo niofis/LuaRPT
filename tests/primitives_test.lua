@@ -81,7 +81,14 @@ end
 
 function TestScene()
 	local l1=dm.load()
-	print(l1:serialize())
+	local srl=l1:serialize()
+	print(srl)
+
+	local l2=loadstring(srl)()
+	--dump(l1)
+	--dump(l2)
+
+	dump(l2.objects[1]:getbox())
 end
 
 

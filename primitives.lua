@@ -44,19 +44,6 @@ function Vector3:new(o)
 	return o
 end
 
-function Vector3:serialize()
-	return string.format("(v3 %.17f %.17f %.17f)",self.x,self.y,self.z)
-end
-
-function Vector3.parse(str)
-	local v=Vector3:new{}
-	local x,y,z=str:match("%(v3 ([^ ]+) ([^ ]+) ([^ ]+)%)")
-	v.x=base.tonumber(x);
-	v.y=base.tonumber(y);
-	v.z=base.tonumber(z);
-	return v
-end
-
 Vector3.__add = function(a,b)
 	local res = Vector3:new{}
 	res.x=a.x+b.x
@@ -166,66 +153,40 @@ function Camera:new(o)
 	return o
 end
 
-function Camera:serialize()
-	return string.format("(cam %s %s %s %s)",self.lt:serialize(),
-		self.lb:serialize(),self.rt:serialize(),self.eye:serialize())
-end
-
-function Camera.parse(str)
-	local v=Camera:new{}
-	local lt,lb,rt,eye=str:match("%(cam (%(.*%)) (%(.*%)) (%(.*%)) (%(.*%))%)")
-	v.lt=Vector3.parse(lt)
-	v.lb=Vector3.parse(lb)
-	v.rt=Vector3.parse(rt)
-	v.eye=Vector3.parse(eye)
-	return v
-end
-
 Scene={}
 function Scene:new(o)
 	o=o or {}
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.objects=o.objects or {}
-	o.lights=o.lights or {}
-	o.camera=o.camera or Camera:new{}
+	if base.type(o.objects) == "table" then
+		for _,b in base.pairs(o.objects) do
+			if b.type == "sphere" then Shpere:new{b} end
+			if b.type == "triangle" then Triangle:new{b} end
+		end
+	else
+		o.objects=o.objects or {}
+	end
+
+	if base.type(o.lights) == "table" then
+		for _,l in base.pairs(o.lights) do
+			if l.type == "point_light" then Light:new{l} end
+		end
+	else
+		o.lights=o.lights or {}
+	end
+
+	if base.type(o.camera) == "table" then
+		Camera:new{o.camera}
+	else
+		o.camera=o.camera or Camera:new{}
+	end
+
 	return o
 end
 
-
 function Scene:serialize()
 	return serpent.dump(self)
-end
-
-function Scene.parse(str)
-	local v=Scene:new{}
-	local objects,lights,camera=str:match("%(sc %[(.+)%] %[(.+)%] (%(.*%))%)")
-
-	for i in string.gmatch(objects,"[^|]+") do
-		if i then
-			local o=Sphere.parse(i)
-			if o then 
-				table.insert(v.objects,o)
-			else
-				o=Triangle.parse(i)
-				if o then 
-					table.insert(v.objects,o)
-				end
-			end
-		end
-	end
-
-	for i in string.gmatch(lights,"[^|]+") do
-		if i then
-			local o=Light.parse(i)
-			if o then 
-				table.insert(v.lights,o)
-			end
-		end
-	end
-	v.camera=Camera.parse(camera)
-	return v
 end
 
 function Scene:loadfromms3d(filename, offset, scale,specular)
