@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 local math = require('math')
 local string = require("string")
 local table = require("table")
+local serpent = require("serpent")
 local ms3d = {} --require("ms3d")
 local tostring = tostring
 
@@ -194,19 +195,7 @@ end
 
 
 function Scene:serialize()
-	local objs= self.objects[1]:serialize()
-	for i=2,#self.objects do
-		objs=objs .. "|" .. self.objects[i]:serialize()
-	end
-	local ligs= self.lights[1]:serialize()
-	for i=2,#self.lights do
-		ligs=ligs .. "|" .. self.lights[i]:serialize()
-	end
-	local cam=self.camera:serialize()
-
-	local srl=string.format("(sc [%s] [%s] %s)",objs,ligs,cam)
-
-	return srl
+	return serpent.dump(self)
 end
 
 function Scene.parse(str)
@@ -290,20 +279,6 @@ function ColorF:new(o)
 	o.b=o.b or 0
 
 	return o
-end
-
-function ColorF:serialize()
-	return string.format("(cf %.17f %.17f %.17f %.17f)",self.a,self.r,self.g,self.b)
-end
-
-function ColorF.parse(str)
-	local v=ColorF:new{}
-	local a,r,g,b=str:match("%(cf ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)%)")
-	v.a=base.tonumber(a);
-	v.r=base.tonumber(r);
-	v.g=base.tonumber(g);
-	v.b=base.tonumber(b);
-	return v
 end
 
 ColorF.__add = function(a,b)
@@ -521,25 +496,9 @@ function Light:new(o)
 	o.color=o.color or ColorF:new{}
 	o.intensity=o.intensity or 100
 
+	o.type="point_light"
 	return o
 end
-
-function Light:serialize()
-	return string.format("(lg %s %s %.17f)",self.position:serialize(),
-		self.color:serialize(),self.intensity)
-end
-
-function Light.parse(str)
-	local v=Light:new{}
-	local position,color,intensity=str:match("%(lg (%(.*%)) (%(.*%)) ([^ ]+)%)")
-	if position and color and intensity then
-		v.position=Vector3.parse(position)
-		v.color=ColorF.parse(color)
-		v.intensity=base.tonumber(intensity)
-	end
-	return v
-end
-
 
 Sphere={}
 function Sphere:new(o)
@@ -558,33 +517,11 @@ function Sphere:new(o)
 	o.islight=o.islight or 0
 	o.intensity= o.intensity or 0
 
+	o.type="sphere"
+
 	return o
 end
 
-function Sphere:serialize()
-	return string.format("(sp %s %s %.17f %.17f %.17f %.17f %.17f %i '%s')",self.center:serialize(),
-		self.color:serialize(),self.radius,self.reflection,
-		self.refraction,self.specular,self.intensity,self.islight,
-		self.name)
-end
-
-function Sphere.parse(str)
-	local v=Sphere:new{}
-	local center,color,radius,
-		reflection,refraction,
-		specular,intensity,islight,
-		name=str:match("%(sp (%(.*%)) (%(.*%)) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) '(.-)'%)")
-	v.center=Vector3.parse(center)
-	v.color=ColorF.parse(color)
-	v.radius=base.tonumber(radius)
-	v.reflection=base.tonumber(reflection)
-	v.refraction=base.tonumber(refraction)
-	v.specular=base.tonumber(specular)
-	v.intensity=base.tonumber(intensity)
-	v.islight=base.tonumber(islight)
-	v.name=name
-	return v
-end
 
 function Sphere:normal(pt)
 	local res=pt-self.center
@@ -668,38 +605,12 @@ function Triangle:new(o)
 	o.islight=o.islight or 0
 	o.intensity= o.intensity or 0
 
+	o.type="triangle"
 	--Initialize
 	o:init()
 	return o
 end
 
-function Triangle:serialize()
-	return string.format("(tr %s %s %s %s %.17f %.17f %.17f %.17f %i '%s')",
-		self.p1:serialize(),self.p2:serialize(),
-		self.p3:serialize(),self.color:serialize(),
-		self.reflection,
-		self.refraction,self.specular,self.intensity,self.islight,
-		self.name)
-end
-
-function Triangle.parse(str)
-	local v=Triangle:new{}
-	local p1,p2,p3,color,
-		reflection,refraction,
-		specular,intensity,islight,
-		name=str:match("%(tr (%(.*%)) (%(.*%)) (%(.*%)) (%(.*%)) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) '(.-)'%)")
-	v.p1=Vector3.parse(p1)
-	v.p2=Vector3.parse(p2)
-	v.p3=Vector3.parse(p3)
-	v.color=ColorF.parse(color)
-	v.reflection=base.tonumber(reflection)
-	v.refraction=base.tonumber(refraction)
-	v.specular=base.tonumber(specular)
-	v.intensity=base.tonumber(intensity)
-	v.islight=base.tonumber(islight)
-	v.name=name
-	return v
-end
 
 function Triangle:init()
 	self.v1=self.p1

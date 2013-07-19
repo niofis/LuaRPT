@@ -81,16 +81,7 @@ end
 
 function TestScene()
 	local l1=dm.load()
-	local srl=l1:serialize()
-	print(srl)
-	local s2=pm.Scene.parse(srl)
-	dump(s2)
-	local srl2=serpent.dump(l1)
-	print(srl2)
-	local fun,err=loadstring(srl2)
-	print(fun,err)
-	local t=fun()
-	dump(t)
+	print(l1:serialize())
 end
 
 
