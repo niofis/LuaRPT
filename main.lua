@@ -23,7 +23,7 @@ function love.update(dt)
 		print("Manager:",mngch:pop())
 	end
 	
-	local err=manager:getError();
+	--local err=manager:getError();
 	if err then
 		print(err)
 		debug.debug()

@@ -88,7 +88,9 @@ function TestScene()
 	--dump(l1)
 	--dump(l2)
 
-	dump(l2.objects[1]:getbox())
+	pm.Scene:new(l2)
+
+	dump(l2)
 end
 
 

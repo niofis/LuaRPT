@@ -146,10 +146,10 @@ function Camera:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.lt=o.lt or Vector3:new{}
-	o.lb=o.lb or Vector3:new{}
-	o.rt=o.rt or Vector3:new{}
-	o.eye=o.eye or Vector3:new{}
+	o.lt= Vector3:new(o.lt)
+	o.lb= Vector3:new(o.lb)
+	o.rt= Vector3:new(o.rt)
+	o.eye= Vector3:new(o.eye)
 	return o
 end
 
@@ -161,8 +161,8 @@ function Scene:new(o)
 
 	if base.type(o.objects) == "table" then
 		for _,b in base.pairs(o.objects) do
-			if b.type == "sphere" then Shpere:new{b} end
-			if b.type == "triangle" then Triangle:new{b} end
+			if b.type == "sphere" then Sphere:new(b) end
+			if b.type == "triangle" then Triangle:new(b) end
 		end
 	else
 		o.objects=o.objects or {}
@@ -170,17 +170,13 @@ function Scene:new(o)
 
 	if base.type(o.lights) == "table" then
 		for _,l in base.pairs(o.lights) do
-			if l.type == "point_light" then Light:new{l} end
+			if l.type == "point_light" then Light:new(l) end
 		end
 	else
 		o.lights=o.lights or {}
 	end
 
-	if base.type(o.camera) == "table" then
-		Camera:new{o.camera}
-	else
-		o.camera=o.camera or Camera:new{}
-	end
+	o.camera=Camera:new(o.camera)
 
 	return o
 end
@@ -453,8 +449,8 @@ function Light:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.position=o.position or Vector3:new{}
-	o.color=o.color or ColorF:new{}
+	o.position= Vector3:new(o.position)
+	o.color= ColorF:new(o.color)
 	o.intensity=o.intensity or 100
 
 	o.type="point_light"
@@ -467,8 +463,8 @@ function Sphere:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.center=o.center or Vector3:new{}
-	o.color=o.color or ColorF:new{}
+	o.center= Vector3:new(o.center)
+	o.color= ColorF:new(o.color)
 	o.radius=o.radius or 0
 	o.name=o.name or "sphere"
 	o.reflection=o.reflection or 0
@@ -554,10 +550,10 @@ function Triangle:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.p1=o.p1 or Vector3:new{}
-	o.p2=o.p2 or Vector3:new{}
-	o.p3=o.p3 or Vector3:new{}
-	o.color=o.color or ColorF:new{}
+	o.p1=o.p1 or Vector3:new(o.p1)
+	o.p2=o.p2 or Vector3:new(o.p2)
+	o.p3=o.p3 or Vector3:new(o.p3)
+	o.color=o.color or ColorF:new(o.color)
 	o.name=o.name or "triangle"
 	o.reflection=o.reflection or 0
 	o.refraction=o.refraction or 0

@@ -3,7 +3,6 @@ package.path = package.path .. ';./LuaRPT/?.lua'
 
 require('love.filesystem')
 
-local serpent = require("serpent")
 local demo=require("demo")
 local scene = demo.load()
 local mngch = love.thread.getChannel("manager");
@@ -16,6 +15,6 @@ local wrkch = love.thread.getChannel("worker")
 
 worker:start()
 
-local s=serpent.dump(scene)
+local s=scene:serialize()
 wrkch:push(s)
 
