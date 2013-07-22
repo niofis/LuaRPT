@@ -297,10 +297,10 @@ end
 
 function ColorF:to255()
 	local res = ColorF:new{}
-	res.a=math.min(self.a*255,255)
-	res.r=math.min(self.r*255,255)
-	res.g=math.min(self.g*255,255)
-	res.b=math.min(self.b*255,255)
+	res.a=math.min(math.floor(self.a*255),255)
+	res.r=math.min(math.floor(self.r*255),255)
+	res.g=math.min(math.floor(self.g*255),255)
+	res.b=math.min(math.floor(self.b*255),255)
 	return res
 end
 
@@ -550,10 +550,10 @@ function Triangle:new(o)
 	base.setmetatable(o,self)
 	self.__index=self
 
-	o.p1=o.p1 or Vector3:new(o.p1)
-	o.p2=o.p2 or Vector3:new(o.p2)
-	o.p3=o.p3 or Vector3:new(o.p3)
-	o.color=o.color or ColorF:new(o.color)
+	o.p1=Vector3:new(o.p1)
+	o.p2=Vector3:new(o.p2)
+	o.p3=Vector3:new(o.p3)
+	o.color=ColorF:new(o.color)
 	o.name=o.name or "triangle"
 	o.reflection=o.reflection or 0
 	o.refraction=o.refraction or 0

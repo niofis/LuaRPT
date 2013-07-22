@@ -83,10 +83,10 @@ function Raytracer:render(section,use_pathtracing,path_samples)
 	local vdv=(camera.lb-camera.lt)/self.resolution.height  --vertical delta vector
 	local samples=path_samples or 10
 	if self.bvh_init==0 then
-		base.print("Building BVH...")
+		--base.print("Building BVH...")
 		local st=os.clock()
 		self.bvh:build(self.scene)
-		base.print("Done in " .. os.clock()-st .. "s")
+		--base.print("Done in " .. os.clock()-st .. "s")
 		self.bvh_init=1
 	end
 	self.use_pathtracing=use_pathtracing
