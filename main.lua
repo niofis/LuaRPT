@@ -7,7 +7,8 @@ local string=require("string")
 
 local time = 0
 local manager = nil
-local mngch = nil
+local managerchn = nil
+local mainchn = nil
 local errorCh = nil
 local wndwidth = 0
 local wndheight = 0
@@ -56,16 +57,17 @@ function CreateJob()
 end
 
 function StartJob()
-	
+
+	manager = love.thread.newThread("manager.lua","manager")
 	manager:start()
 
-	mngch:supply(serpent.dump({job=job}))
-	mngch:supply(serpent.dump({start=true}))
+	managerchn:push(serpent.dump({job=job}))
+	managerchn:push(serpent.dump({start=true}))
 	tm = os.clock()
 end
 
 function StopJob()
-	mngch:supply(serpent.dump({stop=true}))
+	managerchn:push(serpent.dump({stop=true}))
 end
 
 function SavePicture()
@@ -204,9 +206,9 @@ function love.load()
 	wndwidth = love.window.getWidth()
 	wndheight = love.window.getHeight()
 
-	manager = love.thread.newThread("manager.lua","manager")
-	mngch = love.thread.getChannel("manager")
 	
+	managerchn = love.thread.getChannel("managerchn")
+	mainchn = love.thread.getChannel("mainchn")
 
 	--sendjob()
 
@@ -215,7 +217,7 @@ end
 
 function love.update(dt)
 	time=dt
-	local s = mngch:pop()
+	local s = mainchn:pop()
 	if s then
 		local m = loadstring(s)()
 		if m.result then
@@ -225,12 +227,6 @@ function love.update(dt)
 					if x<job.resolution.width and y<job.resolution.height then
 						renderImage:setPixel(x,y,c.r,c.g,c.b,255)
 					end
-					--[[
-					if w.b ~= 0 then 
-						print(s)
-						debug.debug() 
-					end
-					]]
 				end
 			end
 		elseif m.done then
@@ -238,11 +234,13 @@ function love.update(dt)
 		end
 	end
 	
-	local err=manager:getError();
-	if err then
-		print(err)
-		debug.debug()
-		love.event.push("quit")
+	if manager then
+		local err=manager:getError();
+		if err then
+			print(err)
+			debug.debug()
+			love.event.push("quit")
+		end
 	end
 
 	-- update love frames

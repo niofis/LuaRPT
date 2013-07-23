@@ -53,19 +53,24 @@ function getscene()
 end
 
 function getwork()
-	chn:supply(serpent.dump({getwork=true}))
-	local m=chn:demand()
-	if m then
-		section = loadstring(m)()
-		if section.sceneid ~= scene.id then
-			getscene()
+	while true do
+		chn:supply(serpent.dump({getwork=true}))
+		local m=chn:demand()
+		if m then
+			m = loadstring(m)()
+			if m.section then
+				if m.sceneid ~= scene.id then
+					getscene()
+				end
+				section = m
+				dowork()
+			elseif m.close then
+				break
+			end
 		end
-		dowork()
 	end
 end
 
 register()
 
-while true do
-	getwork()
-end
+getwork()

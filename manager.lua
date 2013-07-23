@@ -7,7 +7,8 @@ require('love.event')
 local serpent = require("serpent")
 
 local os = require("os")
-local mngch = love.thread.getChannel("manager");
+local managerchn = love.thread.getChannel("managerchn");
+local mainchn = love.thread.getChannel("mainchn")
 local regch = love.thread.getChannel("register")
 
 local threads={}
@@ -59,8 +60,9 @@ function getRegistrations(num)
 end
 
 function closeallworkers()
-	for _,t in pairs(threads) do
-		t:kill()
+	for _,w in pairs(workers) do
+		w.channel:demand()
+		w.channel:supply(serpent.dump({close=true}))
 	end
 end
 
@@ -70,14 +72,14 @@ function launchWorkers(num)
 		w:start()
 		table.insert(threads,w)
 	end
-
 	getRegistrations(num)
 end
 
 function renderdone()
 	local m = {done = true}
-	mngch:supply(serpent.dump(m))
+	mainchn:supply(serpent.dump(m))
 	alldone=true
+	closeallworkers()
 end
 
 function getWorkerMessages()
@@ -93,36 +95,46 @@ function getWorkerMessages()
 					s.sceneid=job.scene.id
 					w.channel:supply(serpent.dump(s))
 				else
+					w.channel:supply(serpent.dump({close = true }))
 					workersdone=workersdone + 1
 					if workersdone == job.numworkers then
 						renderdone()
 					end
 				end
 			elseif m.result then
-				mngch:supply(serpent.dump(m))
+				mainchn:supply(serpent.dump(m))
 			elseif m.getscene then
 				local s = serpent.dump(job.scene)
 				w.channel:supply(s)
 			end
 		end
 	end
+	for _,t in pairs(threads) do
+
+		local err=t:getError()
+		if err then
+			print(err)
+			debug.debug()
+			love.event.push("quit")
+		end
+	end
 end
 
 function getManagerMessages()
 	while true do
-		local m = mngch:pop()
-		if m then 
+		local m = managerchn:pop()
+		if m then
 			m=loadstring(m)()
 			if m.start then
 				alldone=false
-			if m.stop then
+				generateSections(job.sectionwidth,job.sectionheight)
+				launchWorkers(job.numworkers)
+			elseif m.stop then
 				alldone=true
-			end
+				renderdone()
+				break
 			elseif m.job then
 				job=m.job
-				closeallworkers()
-				launchWorkers(job.numworkers)
-				generateSections(job.sectionwidth,job.sectionheight)
 			end
 		end
 
