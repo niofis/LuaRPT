@@ -16,25 +16,26 @@ local scalex=1.5
 local scaley=1.5
 local renderImage = nil
 local job={}
+local framesstate="none"
 
 local tm=0
 
 local GUI = {}
 
 function love.conf(t)
- -- as before
  t.identity = 'LuaRPT'
--- as before
+ t.title = 'LuaRPT'
 end
 
-function dumpObj(obj)
+function dumpbbj(obj)
 	for i,v in pairs(obj) do
 		print(i,v)
 	end
 end
 
-function CreateJob()
-
+function createjob()
+	job = {}
+	job.done=false
 	job.scene = demo.load()
 	job.scene.id=tostring(job.scene):sub(-7)
 	job.resolution = {}
@@ -54,36 +55,42 @@ function CreateJob()
 
 	scalex=wndwidth/job.resolution.width
 	scaley=wndheight/job.resolution.height
+
 end
 
-function StartJob()
+function startjob()
 
 	manager = love.thread.newThread("manager.lua","manager")
-	manager:start()
 
+	managerchn:clear()
 	managerchn:push(serpent.dump({job=job}))
-	managerchn:push(serpent.dump({start=true}))
+
+	manager:start()
 	tm = os.clock()
 end
 
-function StopJob()
-	managerchn:push(serpent.dump({stop=true}))
+function stopjob()
+	if job.done==false then
+		job.done=true
+		managerchn:push(serpent.dump({stop=true}))
+		mainchn:clear()
+	end
 end
 
-function SavePicture()
+function savepicture()
 	if renderImage then
 		renderImage:encode("img_" .. love.timer.getTime() .. ".png")
 	end
 end
 
-function SaveScreenShot()
+function savescreenshot()
 	local screenshot= love.graphics.newScreenshot()
 	if screenshot then
 		screenshot:encode("scr_" .. love.timer.getTime() .. ".png")
 	end
 end
 
-function CreateNumberTextInput(label,default,parent)
+function createnumbertextinput(label,default,parent)
 	local font = loveframes.basicfontsmall
 	local lbl = loveframes.Create("text")
 	lbl:SetText(label)
@@ -101,7 +108,7 @@ function CreateNumberTextInput(label,default,parent)
 	return txt
 end
 
-function CreateButton(label,parent,fn)
+function createbutton(label,parent,fn)
 	local button = loveframes.Create("button")
 	button:SetText(label)
 	button.OnClick = fn
@@ -109,17 +116,16 @@ function CreateButton(label,parent,fn)
 	return button
 end
 
-function createGUI()
+function creategui()
 	local font = loveframes.basicfontsmall
 
 	--Main menu
 	local mainframe = loveframes.Create("frame")
-	mainframe:SetName("Render Options")
-	mainframe:SetSize(200, 400)
-	mainframe:SetPos(0, 0)
+	mainframe:SetName("Render Options (toggle: m)")
+	mainframe:SetSize(200, 410)
+	mainframe:SetPos(wndwidth-200,0)
 	mainframe:SetState("idle")
 	mainframe:ShowCloseButton(false)
-	mainframe:Center()
 
 	GUI.mainframe=mainframe
 
@@ -130,47 +136,51 @@ function createGUI()
 	optionslist:SetSpacing(5)
 	optionslist:SetDisplayType("vertical")
 
-	mainframe.workersnumtxt=CreateNumberTextInput("Workers Number:","8",optionslist)
+	mainframe.workersnumtxt=createnumbertextinput("Workers Number:","8",optionslist)
 	GUI.GetWorkersNumber = function () return tonumber(GUI.mainframe.workersnumtxt:GetText()) or 8 end
 
-	mainframe.sectorsizetxt=CreateNumberTextInput("Sector size (pixels):","10",optionslist)
+	mainframe.sectorsizetxt=createnumbertextinput("Sector size (pixels):","10",optionslist)
 	GUI.GetSectorSize = function () return tonumber(GUI.mainframe.sectorsizetxt:GetText()) or 10 end
 
 	local useptlbl = loveframes.Create("text")
 	useptlbl:SetText("Use path tracing:")
 	useptlbl:SetFont(font)
 	optionslist:AddItem(useptlbl)
-	local pathtracingchk = loveframes.Create("checkbox")
-	pathtracingchk:SetSize(20,20)
-	optionslist:AddItem(pathtracingchk)
-	mainframe.pathtracingchk=pathtracingchk
-	GUI.GetUsePathTracing = function () return GUI.mainframe.pathtracingchk:GetChecked() and 1 or 0 end
 
-	mainframe.ptsamplestxt=CreateNumberTextInput("Path tracing samples:","10",optionslist)
+	local usepathtracing = loveframes.Create("multichoice")
+	usepathtracing:AddChoice("Yes")
+	usepathtracing:AddChoice("No")
+	usepathtracing:SetChoice("No")
+	optionslist:AddItem(usepathtracing)
+	mainframe.usepathtracing=usepathtracing
+	GUI.GetUsePathTracing = function () return GUI.mainframe.usepathtracing:GetChoice()=="Yes" and 1 or 0 end
+
+	mainframe.ptsamplestxt=createnumbertextinput("Path tracing samples:","10",optionslist)
 	GUI.GetPathTracingSamples = function () return tonumber(GUI.mainframe.ptsamplestxt:GetText()) or 10 end
 
 
-	mainframe.imagewidthtxt=CreateNumberTextInput("Width:","800",optionslist)
+	mainframe.imagewidthtxt=createnumbertextinput("Render Image Width:","800",optionslist)
 	GUI.GetImageWidth = function () return tonumber(GUI.mainframe.imagewidthtxt:GetText()) or 800 end
 
-	mainframe.imageheighttxt=CreateNumberTextInput("Height:","600",optionslist)
+	mainframe.imageheighttxt=createnumbertextinput("Render Image Height:","600",optionslist)
 	GUI.GetImageHeight = function () return tonumber(GUI.mainframe.imageheighttxt:GetText()) or 600 end
 
-	CreateButton("Start",optionslist,function(object)
-	    CreateJob()
-	    StartJob()
+	createbutton("Start",optionslist,function(object)
+	    createjob()
+	    startjob()
 	    GUI.infoframe:SetPos(GUI.mainframe:GetPos())
+	    GUI.infoframe.stopbutton:SetText("Stop")
 	    loveframes.SetState("running")
 	end)
 
 	--Image Buttons
-	CreateButton("Save Screenshot",optionslist,SaveScreenShot)
-	CreateButton("Save Image",optionslist,SavePicture)
+	createbutton("Save Screenshot",optionslist,savescreenshot)
+	createbutton("Save Image",optionslist,savepicture)
 
 
 	--Information frame
 	local infoframe = loveframes.Create("frame")
-	infoframe:SetName("Render Info")
+	infoframe:SetName("Render Info (toggle: m)")
 	infoframe:SetSize(200, love.graphics.getHeight() - 325)
 	infoframe:SetPos(0, 0)
 	infoframe:SetState("running")
@@ -186,15 +196,16 @@ function createGUI()
 	infolist:SetDisplayType("vertical")
 
 
-	CreateButton("Stop",infolist,function(object)
-		StopJob()
+	infoframe.stopbutton=createbutton("Stop",infolist,function(object)
+		stopjob()
 	    GUI.mainframe:SetPos(infoframe:GetPos())
 	    loveframes.SetState("idle")
 	end)
 
+
 	--Image Buttons
-	CreateButton("Save Screenshot",infolist,SaveScreenShot)
-	CreateButton("Save Image",infolist,SavePicture)
+	createbutton("Save Screenshot",infolist,savescreenshot)
+	createbutton("Save Image",infolist,savepicture)
 
 
 	loveframes.SetState("idle")
@@ -210,18 +221,16 @@ function love.load()
 	managerchn = love.thread.getChannel("managerchn")
 	mainchn = love.thread.getChannel("mainchn")
 
-	--sendjob()
-
-	createGUI()
+	creategui()
 end
 
 function love.update(dt)
 	time=dt
-	local s = mainchn:pop()
-	if s then
-		local m = loadstring(s)()
-		if m.result then
-			for y,v in pairs(m.data) do
+	local m = mainchn:pop()
+	if m then
+		local msg = loadstring(m)()
+		if msg.result then
+			for y,v in pairs(msg.data) do
 				for x,w in pairs(v) do
 					local c = pm.ColorF.to255(w)
 					if x<job.resolution.width and y<job.resolution.height then
@@ -229,7 +238,9 @@ function love.update(dt)
 					end
 				end
 			end
-		elseif m.done then
+		elseif msg.done then
+			job.done=true
+			GUI.infoframe.stopbutton:SetText("Back")
 			print("Done in: " .. (os.clock() - tm) )
 		end
 	end
@@ -237,7 +248,7 @@ function love.update(dt)
 	if manager then
 		local err=manager:getError();
 		if err then
-			print(err)
+			print("Manager Error: ", err)
 			debug.debug()
 			love.event.push("quit")
 		end
@@ -274,9 +285,13 @@ function love.keypressed(key, unicode)
 
 	if key=="escape" then
 		love.event.push("quit")
+	elseif key == "m" then
+		local tmp=loveframes.GetState()
+		loveframes.SetState(framesstate)
+		framesstate=tmp
 	end
 
-	loveframes.keypressed(key, string.byte(unicode,1))
+	loveframes.keypressed(key, string.byte(unicode or "\0",1))
 end
 
 function love.keyreleased(key)

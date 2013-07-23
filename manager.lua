@@ -3,6 +3,7 @@ package.path = package.path .. ';./LuaRPT/?.lua'
 
 require('love.filesystem')
 require('love.event')
+require('love.timer')
 
 local serpent = require("serpent")
 
@@ -14,14 +15,14 @@ local regch = love.thread.getChannel("register")
 local threads={}
 local workers = {}
 local workersdone=0
-local alldone=true
+local working=true
 local job=nil
 
 local sections = {}
 
 local tm  = os.clock()
 
-function generateSections(sw,sh)
+function generatesections(sw,sh)
 	sections = {}
 	local xstep=sw
 	local ystep=sh
@@ -46,7 +47,7 @@ function generateSections(sw,sh)
 	end
 end
 
-function getRegistrations(num)
+function getregistrations(num)
 	for _=1,num do
 		local r = regch:demand()
 		--Registration starts when the worker send a new channel
@@ -61,51 +62,53 @@ end
 
 function closeallworkers()
 	for _,w in pairs(workers) do
-		w.channel:demand()
-		w.channel:supply(serpent.dump({close=true}))
+		w.sendchn:supply(serpent.dump({close=true}))
+		w.receivechn:clear()
 	end
+	threads={}
 end
 
-function launchWorkers(num)
+function launchworkers(num)
+	threads={}
 	for i=1,num do
 		local w = love.thread.newThread("worker.lua","worker")
 		w:start()
 		table.insert(threads,w)
 	end
-	getRegistrations(num)
+	--getregistrations(num)
 end
 
 function renderdone()
-	local m = {done = true}
-	mainchn:supply(serpent.dump(m))
-	alldone=true
-	closeallworkers()
+	mainchn:supply(serpent.dump({done = true}))
+	working=false
+	managerchn:clear()
 end
 
-function getWorkerMessages()
+function getworkermessages()
 	for _,w in pairs(workers) do
-		local m = w.channel:pop()
+		local m = w.receivechn:pop()
 		if m then
-			m=loadstring(m)()
+			if type(m) == "string" then
+				local msg=loadstring(m)()
 
-			if m.getwork then
-				local s=table.remove(sections,1)
-				if s then
-					s.section=true
-					s.sceneid=job.scene.id
-					w.channel:supply(serpent.dump(s))
-				else
-					w.channel:supply(serpent.dump({close = true }))
-					workersdone=workersdone + 1
-					if workersdone == job.numworkers then
-						renderdone()
+				if msg.getwork then
+					local s=table.remove(sections,1)
+					if s then
+						s.section=true
+						s.sceneid=job.scene.id
+						w.sendchn:push(serpent.dump(s))
+					else
+						w.sendchn:push(serpent.dump({close = true }))
+						workersdone=workersdone + 1
+						if workersdone == job.numworkers then
+							renderdone()
+						end
 					end
+				elseif msg.result then
+					mainchn:push(m)
+				elseif msg.getscene then
+					w.sendchn:push(serpent.dump({scene = job.scene}))
 				end
-			elseif m.result then
-				mainchn:supply(serpent.dump(m))
-			elseif m.getscene then
-				local s = serpent.dump(job.scene)
-				w.channel:supply(s)
 			end
 		end
 	end
@@ -113,34 +116,40 @@ function getWorkerMessages()
 
 		local err=t:getError()
 		if err then
-			print(err)
+			print("Worker Error: ", err)
 			debug.debug()
 			love.event.push("quit")
 		end
 	end
 end
 
-function getManagerMessages()
-	while true do
+function getmanagermessages()
+	while working==true do
 		local m = managerchn:pop()
 		if m then
-			m=loadstring(m)()
-			if m.start then
-				alldone=false
-				generateSections(job.sectionwidth,job.sectionheight)
-				launchWorkers(job.numworkers)
-			elseif m.stop then
-				alldone=true
-				renderdone()
-				break
-			elseif m.job then
-				job=m.job
+			if type(m) == "string" then
+				local msg=loadstring(m)()
+				if msg.stop then
+					working=false
+					closeallworkers()
+					break
+				elseif msg.job then
+					working=true
+					job=msg.job
+					generatesections(job.sectionwidth,job.sectionheight)
+					launchworkers(job.numworkers)
+				end
+			elseif tostring(m)=="Channel" then
+				--This is a registration from a worker
+				local w={}
+				w.id=tostring(w):sub(-7)
+				w.sendchn=m
+				w.receivechn= love.thread.newChannel()
+				workers[w.id]=w
+				w.sendchn:push(w.receivechn)
 			end
 		end
-
-		if alldone == false then
-			getWorkerMessages()
-		end
+		getworkermessages()
 	end
 end
 
@@ -150,5 +159,5 @@ end
 
 
 --Main loop
-getManagerMessages()
+getmanagermessages()
 
