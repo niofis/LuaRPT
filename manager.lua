@@ -115,15 +115,19 @@ function getManagerMessages()
 			m=loadstring(m)()
 			if m.start then
 				alldone=false
-				while alldone == false do
-					getWorkerMessages()
-				end
+			if m.stop then
+				alldone=true
+			end
 			elseif m.job then
 				job=m.job
 				closeallworkers()
 				launchWorkers(job.numworkers)
 				generateSections(job.sectionwidth,job.sectionheight)
 			end
+		end
+
+		if alldone == false then
+			getWorkerMessages()
 		end
 	end
 end
