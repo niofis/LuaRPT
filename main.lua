@@ -199,7 +199,7 @@ function creategui()
 	--Information frame
 	local infoframe = loveframes.Create("frame")
 	infoframe:SetName("Render Info (toggle: m)")
-	infoframe:SetSize(200, 410)
+	infoframe:SetSize(200, 160)
 	infoframe:SetPos(0, 0)
 	infoframe:SetState("running")
 	infoframe:ShowCloseButton(false)
