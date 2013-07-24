@@ -2,7 +2,6 @@
 local pm=require("primitives")
 local serpent=require("serpent")
 local os = require("os")
-local demo=require("demo")
 local string=require("string")
 
 local time = 0
@@ -34,9 +33,12 @@ function dumpbbj(obj)
 end
 
 function createjob()
+
+	package.loaded.scene=nil
+
 	job = {}
 	job.done=false
-	job.scene = demo.load()
+	job.scene = require("scene").load()
 	job.scene.id=tostring(job.scene):sub(-7)
 	job.resolution = {}
 	job.resolution.width = GUI.GetImageWidth()
@@ -50,6 +52,9 @@ function createjob()
 	local ss=GUI.GetSectorSize()
 	job.sectionwidth=ss --math.ceil(job.resolution.height/(job.numworkers*ss))
 	job.sectionheight=ss--math.ceil(job.resolution.height/(job.numworkers*ss))
+
+	job.sectionstotal=(job.resolution.width*job.resolution.height) / (job.sectionwidth*job.sectionheight)
+	job.sectionsdone=0
 
 	renderImage = love.image.newImageData( job.resolution.width, job.resolution.height )
 
@@ -90,6 +95,11 @@ function savescreenshot()
 	end
 end
 
+function updateinfo()
+	GUI.infoframe.progresslbl:SetText("Sections: " .. job.sectionsdone .. "/" .. job.sectionstotal .. " (" .. math.ceil(100*job.sectionsdone/job.sectionstotal) .. "%)")
+	GUI.infoframe.timelbl:SetText("Render time: " .. os.clock() - tm .. "s")
+end
+
 function createnumbertextinput(label,default,parent)
 	local font = loveframes.basicfontsmall
 	local lbl = loveframes.Create("text")
@@ -114,6 +124,14 @@ function createbutton(label,parent,fn)
 	button.OnClick = fn
 	parent:AddItem(button)
 	return button
+end
+
+function createlabel(text,parent,font)
+	local lbl = loveframes.Create("text")
+	lbl:SetText(text)
+	lbl:SetFont(font)
+	parent:AddItem(lbl)
+	return lbl
 end
 
 function creategui()
@@ -181,7 +199,7 @@ function creategui()
 	--Information frame
 	local infoframe = loveframes.Create("frame")
 	infoframe:SetName("Render Info (toggle: m)")
-	infoframe:SetSize(200, love.graphics.getHeight() - 325)
+	infoframe:SetSize(200, 410)
 	infoframe:SetPos(0, 0)
 	infoframe:SetState("running")
 	infoframe:ShowCloseButton(false)
@@ -195,10 +213,12 @@ function creategui()
 	infolist:SetSpacing(5)
 	infolist:SetDisplayType("vertical")
 
+	GUI.infoframe.progresslbl=createlabel("Progress:",infolist,font)
+	GUI.infoframe.timelbl=createlabel("Time:",infolist,font)
 
 	infoframe.stopbutton=createbutton("Stop",infolist,function(object)
 		stopjob()
-	    GUI.mainframe:SetPos(infoframe:GetPos())
+	    GUI.mainframe:SetPos(GUI.infoframe:GetPos())
 	    loveframes.SetState("idle")
 	end)
 
@@ -212,6 +232,8 @@ function creategui()
 end
 
 function love.load()
+	love.window.setMode(800,600)
+
 	require("libraries.loveframes")
 
 	wndwidth = love.window.getWidth()
@@ -238,10 +260,12 @@ function love.update(dt)
 					end
 				end
 			end
+			job.sectionsdone=job.sectionsdone + 1
 		elseif msg.done then
 			job.done=true
 			GUI.infoframe.stopbutton:SetText("Back")
-			print("Done in: " .. (os.clock() - tm) )
+			--last info update
+			updateinfo()
 		end
 	end
 	
@@ -255,6 +279,10 @@ function love.update(dt)
 	end
 
 	-- update love frames
+	if job.done==false then
+		updateinfo()
+	end
+
 	loveframes.update(dt)
 end
 

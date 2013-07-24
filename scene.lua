@@ -27,13 +27,9 @@ local math=require("math")
 local rt=require("raytracer")
 local pm=require("primitives")
 
-local base = _G
-local io = require("io")
-local table=require("table")
+local scene = {}
 
-module("demo")
-
-function spiral(count,start,scn)
+local function spiral(count,start,scn)
 	local si=2*math.pi/count
 	local dx,dy,dz
 	dy=0.125
@@ -45,7 +41,7 @@ function spiral(count,start,scn)
 	end
 end
 
-function load()
+function scene.load()
 	local scn=pm.Scene:new{}
 	scn.camera.lt.x=-3.2
 	scn.camera.lt.y=4.8
@@ -86,3 +82,5 @@ function load()
 	--table.insert(scn.objects,scn.lights[2])
 	return scn
 end
+
+return scene
