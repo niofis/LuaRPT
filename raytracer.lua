@@ -32,6 +32,7 @@ local base = _G
 
 module("raytracer")
 
+
 Ray={}
 function Ray:new(o)
 	o=o or {}
@@ -258,7 +259,7 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 			end
 		end
 		]]
-		if use_pathtracing==1  and level<2 then
+		if use_pathtracing==1  and level<10 then
 			local rand_ray=Ray:new{}
 			local dotp=0
 			--Get only rays directed to the upper half hemisphere of the collision point, the normal indicates the north
@@ -274,7 +275,8 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 			local rc=self:traceray(rand_ray,level,use_pathtracing)
 			if(rc.obj~=nil and rc.obj~=result.obj) then
 				if dotp<0 then dotp=0 end
-				result.color=result.color+(result.obj.color*(rc.color*dotp)) + (rc.color*dotp*0.2)
+				result.color=result.color + (result.color * rc.color * dotp) + (rc.color * dotp)
+				--result.color=result.color + (rc.color * dotp)--+ (obj.reflectionr*dotp*rc.color)
 			end
 		end
 	end
