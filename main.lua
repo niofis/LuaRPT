@@ -154,7 +154,7 @@ function creategui()
 	optionslist:SetSpacing(5)
 	optionslist:SetDisplayType("vertical")
 
-	mainframe.workersnumtxt=createnumbertextinput("Workers Number:","8",optionslist)
+	mainframe.workersnumtxt=createnumbertextinput("Workers Number:","3",optionslist)
 	GUI.GetWorkersNumber = function () return tonumber(GUI.mainframe.workersnumtxt:GetText()) or 8 end
 
 	mainframe.sectorsizetxt=createnumbertextinput("Sector size (pixels):","10",optionslist)
@@ -177,10 +177,10 @@ function creategui()
 	GUI.GetPathTracingSamples = function () return tonumber(GUI.mainframe.ptsamplestxt:GetText()) or 10 end
 
 
-	mainframe.imagewidthtxt=createnumbertextinput("Render Image Width:","800",optionslist)
+	mainframe.imagewidthtxt=createnumbertextinput("Render Image Width:","300",optionslist)
 	GUI.GetImageWidth = function () return tonumber(GUI.mainframe.imagewidthtxt:GetText()) or 800 end
 
-	mainframe.imageheighttxt=createnumbertextinput("Render Image Height:","600",optionslist)
+	mainframe.imageheighttxt=createnumbertextinput("Render Image Height:","200",optionslist)
 	GUI.GetImageHeight = function () return tonumber(GUI.mainframe.imageheighttxt:GetText()) or 600 end
 
 	createbutton("Start",optionslist,function(object)

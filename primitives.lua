@@ -1,25 +1,3 @@
---[[
-Copyright (c) 2011 Enrique CR
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-]]
-
 
 local math = require('math')
 local string = require("string")
@@ -176,9 +154,41 @@ function Scene:new(o)
 		o.lights=o.lights or {}
 	end
 
+	if base.type(o.materials) == "table" then
+		for _,m in base.pairs(o.materials) do
+			Material:new(m)
+		end
+	else
+		o.materials=o.materials or {}
+	end
+
+	if base.type(o.groups) == "table" then
+		for _,g in base.pairs(o.groups) do
+			Group:new(g)
+		end
+	else
+		o.groups=o.groups or {}
+	end
+
 	o.camera=Camera:new(o.camera)
 
 	return o
+end
+
+function Scene:addobject(o)
+	table.insert(self.objects,o)
+end
+
+function Scene:addlight(l)
+	table.insert(self.lights,l)
+end
+
+function Scene:addmaterial(m)
+	table.insert(self.materials,m)
+end
+
+function Scene:addgroup(g)
+	table.insert(self.groups,g)
 end
 
 function Scene:serialize()
@@ -311,6 +321,37 @@ function ColorF:normalize()
 		self.g=self.g/m
 		self.b=self.b/m
 	end
+end
+
+Material = {}
+
+function Material:new(o)
+	o = o or {}
+	base.setmetatable(o,self)
+	self.__index = self
+
+	o.name = o.name or "material"
+	o.diffuse = ColorF:new(o.diffuse)
+	o.reflection = o.reflection or 0
+	o.refraction = o.refraction or 0
+	o.specular = o.specular or 0
+	return o
+end
+
+function Material:getdiffuse(x,y)
+	return self.diffuse
+end
+
+Group = {}
+
+function Group:new(o)
+	o = o or {}
+	base.setmetatable(o,self)
+	self.__index=self
+
+	o.name = o.name or "group"
+	o.material = Material:new(o.material)
+	return o
 end
 
 Box={}
@@ -464,7 +505,9 @@ function Sphere:new(o)
 	self.__index=self
 
 	o.center= Vector3:new(o.center)
-	o.color= ColorF:new(o.color)
+	
+	o.group= Group:new(o.group)
+
 	o.radius=o.radius or 0
 	o.name=o.name or "sphere"
 	o.reflection=o.reflection or 0

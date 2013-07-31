@@ -1,24 +1,3 @@
---[[
-Copyright (c) 2011 Enrique CR
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-]]
 
 local bvh = require("bvh")
 local primitives = require("primitives")
@@ -32,6 +11,11 @@ local base = _G
 
 module("raytracer")
 
+function dump(obj)
+	for i,v in base.pairs(obj) do
+		base.print(i,v)
+	end
+end
 
 Ray={}
 function Ray:new(o)
@@ -135,6 +119,11 @@ function Raytracer:lighting(res,ray)
 	--for x=1,100 do
 	for i,l in base.pairs(scene.lights) do
 		local lp=nil
+
+		--Revise this, as light could be a simple pointlight or an object
+		local l_color = l.group.material:getdiffuse()
+
+
 		if(self.use_pathtracing==1) then lp=l:getrandomlightpoint() else lp=l:getlightpoint() end
 		local nray=Ray:new{origin=pt,direction=(lp-pt)};
 		local len=nray.direction:normalize()
@@ -146,12 +135,12 @@ function Raytracer:lighting(res,ray)
 			light=light+math.max(dp,0)
 --					base.print(math.max(dp,0),light.r,light.g,light.b)
 			--specular lighting
-			if res.obj.specular>0 then
+			if res.obj.group.material.specular>0 then
 				local vr=nray.direction - (on*(int*2))
 				int=vr*ray.direction
 				if(int>0) then
 					int=int^20
-					spec=spec+(l.color*int)*res.obj.specular
+					spec=spec+(l_color*int)*res.obj.group.material.specular
 				end
 			end
 		end
@@ -196,39 +185,43 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 
 		local li=nil
 
+		local obj_color=obj.group.material:getdiffuse()
+		local obj_refraction=obj.group.material.refraction
+		local obj_reflection=obj.group.material.reflection
+
 		if obj.islight==1 then
-			result.color=obj.color
+			result.color=obj_color
 		else
 			li=self:lighting(result,ray)
 			result.lighting=li.lighting
 			result.specular=li.specular
-			result.color=(obj.color*result.lighting) + result.specular
+			result.color=(obj_color*result.lighting) + result.specular
 		end
 
 		self.results[level]=result
 		if(level<10) then
-			if(obj.reflection>0) then
+			if(obj_reflection>0) then
 				nray=self:reflection(ray,level)
-				result.color=(result.color*(1-obj.reflection)) + (self:traceray(nray,level+1,use_pathtracing).color*obj.reflection)
+				result.color=(result.color*(1-obj_reflection)) + (self:traceray(nray,level+1,use_pathtracing).color*obj_reflection)
 			end
-			if(obj.refraction>0 and obj.color.a<1) then
-				result.refraction=obj.refraction
+			if(obj_refraction>0 and obj_color.a<1) then
+				result.refraction=obj_refraction
 				nray=self:refraction(ray,level)
 				if(nray) then
 					local refracted=self:traceray(nray,level+1,use_pathtracing)
 					local rcol=refracted.color
 					if refracted.refraction~=1 then
 						--beer's law, apply only on internal reflection
-						local absorbance=obj.color*0.15*(-refracted.dist)
+						local absorbance=obj_color*0.15*(-refracted.dist)
 						absorbance.a=math.exp(absorbance.a)
 						absorbance.r=math.exp(absorbance.r)
 						absorbance.g=math.exp(absorbance.g)
 						absorbance.b=math.exp(absorbance.b)
 						rcol=rcol*absorbance
-						--result.color=(result.color*(obj.color.a)) + refracted.color*(1-obj.color.a)
-						--result.color=(result.color*(obj.color.a)) +(refracted.color * absorbance)*(1-obj.color.a)
+						--result.color=(result.color*(obj_color.a)) + refracted.color*(1-obj_color.a)
+						--result.color=(result.color*(obj_color.a)) +(refracted.color * absorbance)*(1-obj_color.a)
 					end
-					result.color=(result.color*(obj.color.a)) + rcol*(1-obj.color.a)
+					result.color=(result.color*(obj_color.a)) + rcol*(1-obj_color.a)
 				end
 			end
 		end
@@ -276,7 +269,7 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 			if(rc.obj~=nil and rc.obj~=result.obj) then
 				if dotp<0 then dotp=0 end
 				result.color=result.color + (result.color * rc.color * dotp) + (rc.color * dotp)
-				--result.color=result.color + (rc.color * dotp)--+ (obj.reflectionr*dotp*rc.color)
+				--result.color=result.color + (rc.color * dotp)--+ (obj_reflectionr*dotp*rc.color)
 			end
 		end
 	end
