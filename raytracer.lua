@@ -162,7 +162,6 @@ function Raytracer:traceray(ray,level,use_pathtracing)
 	local scene=self.scene
 	local result={}
 	local nray=nil
-
 	local objs=self.bvh:traverse(ray)
 
 	for i,o in base.pairs(objs) do

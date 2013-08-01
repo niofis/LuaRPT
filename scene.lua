@@ -42,7 +42,7 @@ function scene.load()
 	local gblue=pm.Group:new{material=mblue}
 	local myellow=pm.Material:new{diffuse=pm.ColorF:new{r=1,g=1},specular=1, reflection = 0.4}
 	local gyellow=pm.Group:new{material=myellow}
-	local mredglass=pm.Material:new{diffuse=pm.ColorF:new{a=0.5,r=1},refraction=1.491, specular=1}
+	local mredglass=pm.Material:new{diffuse=pm.ColorF:new{a=0.5,r=1}, reflection=0.5,refraction=1.491, specular=1}
 	local gredglass=pm.Group:new{material=mredglass}
 	local mfloor=pm.Material:new{diffuse=pm.ColorF:new{g=0.5,r=0.5,b=0.5}}
 	local gfloor=pm.Group:new{material=mfloor}
