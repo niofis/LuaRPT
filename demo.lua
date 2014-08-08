@@ -25,17 +25,17 @@ end
 
 function scene.load()
 	local scn=pm.Scene:new{}
-	scn.camera.lt.x=-3.2
-	scn.camera.lt.y=4.8
+	scn.camera.lt.x=-8
+	scn.camera.lt.y=9
 	scn.camera.lt.z=-5
-	scn.camera.lb.x=-3.2
+	scn.camera.lb.x=-8
 	scn.camera.lb.y=0
 	scn.camera.lb.z=-5
-	scn.camera.rt.x=3.2
-	scn.camera.rt.y=4.8
+	scn.camera.rt.x=8
+	scn.camera.rt.y=9
 	scn.camera.rt.z=-5
 	scn.camera.eye.x=0
-	scn.camera.eye.y=2.4
+	scn.camera.eye.y=5
 	scn.camera.eye.z=-15
 
 	local mblue=pm.Material:new{diffuse=pm.ColorF:new{b=1},specular=1}

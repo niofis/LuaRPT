@@ -1,2 +1,4 @@
 libraries
 *.png
+*.ppm
+*.swp

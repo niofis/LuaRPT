@@ -31,6 +31,28 @@ local io = require("io")
 
 module("image")
 
+function ppm(filename, data)
+	local ppm_magic = "P6"
+	local file = io.open(filename, "wb")
+	
+	file:write(
+		string.format("%s %i %i %i\n",
+		ppm_magic,
+		data.width,
+		data.height,
+		"255"))
+	for y=0, data.height-1 do
+		for x=0, data.width-1 do
+			c = data[y][x]
+			file:write(
+			string.char(math.min(c.r*255,255)),
+			string.char(math.min(c.g*255,255)),
+			string.char(math.min(c.b*255,255)))
+		end
+	end
+	file:close()
+end
+
 function serialize(data)
 	local s=""
 	local c=nil
@@ -38,7 +60,7 @@ function serialize(data)
 
 	for y=0,data.height-1 do
 		for x=0, data.width-1 do
-			c=data[y][x];
+			c=data[y][x]
 			s=string.format("%02X%02X%02X",
 			math.min(c.r*255,255),
 			math.min(c.g*255,255),
@@ -60,7 +82,7 @@ function save(filename,data)
 	for y=data.y,data.y+data.height-1 do
 		str=""
 		for x=data.x,data.x+data.width-1 do
-			c=data[y][x];
+			c=data[y][x]
 			s=string.format("%02X%02X%02X",
 			math.min(c.r*255,255),
 			math.min(c.g*255,255),
@@ -83,7 +105,7 @@ function saveforpost(message,local_filename,remote_filename, data)
 	for y=0,data.height-1 do
 		str=""
 		for x=0, data.width-1 do
-			c=data[y][x];
+			c=data[y][x]
 			s=string.format("%02X%02X%02X",
 			math.min(c.r*255,255),
 			math.min(c.g*255,255),
@@ -99,7 +121,7 @@ function savebinary(filename,data)
 	local file=io.open(filename,"wb")
 	for y=0,data.height-1 do
 		for x=0, data.width-1 do
-			c=data[y][x];
+			c=data[y][x]
 			file:write(
 			string.char(math.min(c.r*255,255)),
 			string.char(math.min(c.g*255,255)),

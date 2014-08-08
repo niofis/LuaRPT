@@ -29,8 +29,8 @@ local image=require("image")
 
 local scene=require("demo")
 
-res_width=320
-res_height=240
+res_width=1280
+res_height=720
 use_sdl=0
 use_png=0
 use_hex=0
@@ -72,6 +72,10 @@ for i,v in pairs(arg) do
 	end
 	if(v=="-scene") then -- Usage -scene package_name
 		scene=require(arg[i+1])
+	end
+	if(v=="-ppm") then
+		use_ppm=1
+		img_file=arg[i+1]
 	end
 end
 
@@ -173,6 +177,12 @@ if(use_png==1) then
 	io.stdout:write("saving png...")
 	png.save(img_file)
 	png.release()
+	print("done!")
+end
+
+if(use_ppm==1) then
+	io.stdout:write("saving ppm...")
+	image.ppm(img_file, render)
 	print("done!")
 end
 
