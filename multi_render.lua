@@ -1,7 +1,7 @@
 local os=require("os")
 
-res_width=320
-res_height=240
+res_width=1280
+res_height=720
 use_sdl=0
 use_png=0
 use_hex=0
@@ -59,7 +59,7 @@ if procs>1 and procs%2 ~=0 then procs=procs+1 end
 if section_w==0 then section_w=res_width end
 if section_h==0 then section_h=res_height end
 
-local cmd="start ../luajit.exe render.lua -scene %s -res %u %u"
+local cmd="start luajit render.lua -scene %s -res %u %u"
 
 cmd=string.format(cmd,scene,res_width,res_height)
 
@@ -70,10 +70,10 @@ if(use_path_tracing==1) then cmd=cmd .. " -path " .. path_tracing_samples end
 
 local sec_str=" -s %d %d %d %d"
 
-local sw=section_w/procs
+local sh=section_h/procs
 
 for i=0,procs-1 do
-	local ns=string.format(sec_str,section_x+sw*i,section_y,sw,section_h)
+	local ns=string.format(sec_str,section_x,section_y + sh*i,section_w,sh)
 	ns=ns .. " -hex " .. img_file .. "." .. (i+1)
 	ns=cmd .. ns
 	os.execute(ns)
