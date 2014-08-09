@@ -59,7 +59,7 @@ if procs>1 and procs%2 ~=0 then procs=procs+1 end
 if section_w==0 then section_w=res_width end
 if section_h==0 then section_h=res_height end
 
-local cmd="start luajit render.lua -scene %s -res %u %u"
+local cmd="start lua render.lua -scene %s -res %u %u"
 
 cmd=string.format(cmd,scene,res_width,res_height)
 
